@@ -2,13 +2,17 @@ const { log } = require('./utils');
 
 // TODO: set up db
 
-function getMenu (options) {
+function getMenu(options) {
+    // TODO: return specific menu from db
+}
+
+function showMenu(options) {
 
     // placeholder
     const menu = {
         bobsMenu: [
             {
-                text: 'Rice Nyama: 300',
+                text: 'Rice Beef: 300',
                 value: 1,
             },
             {
@@ -18,7 +22,7 @@ function getMenu (options) {
         ],
         marionsMenu: [
             {
-                text: 'Rice Nyama: 300',
+                text: 'Rice Beef: 300',
                 value: 1,
             },
             {
@@ -26,6 +30,14 @@ function getMenu (options) {
                 value: 2,
             },
         ]
+    }
+    function markDownMenu(menu) {
+        let formattedMenu;
+        Objects.options(menu)
+            .forEach(([key, value]) => {
+                console.log(key, value);
+            });
+        return formattedMenu;
     }
 
     try {
@@ -37,20 +49,20 @@ function getMenu (options) {
             // create a response with all the menus
             response = {
                 text: 'All menus',
-                mrkdwn: true,
-                mrkdwn_in: ['text, attachments'],
                 attachments: [{
-                    text: 'What would you like to order?',
-                    fallback: 'What would you like to order?',
+                    text: markDownMenu,
+                    fallback: markDownMenu,
                     color: '#2c963f',
+                    mrkdwn: true,
+                    mrkdwn_in: ['text'],
                     attachment_type: 'default',
                     callback_id: 'order_selected',
-                    // actions: [{
-                    //     name: 'show_menu_menu',
-                    //     text: 'Choose a report...',
-                    //     type: 'select', // render menu
-                    //     options: menu,
-                    // }],
+                    actions: [{
+                        name: 'pick_lunch_items',
+                        title: 'Make an order',
+                        text: 'Order',
+                        type: 'button',
+                    }],
                 }]
             }
         } else {
@@ -63,7 +75,7 @@ function getMenu (options) {
                 const text = 'Hmmm, Currently, you can only order lunch from BOB or MARION\'s cafes.\n\nTry `/order bobs` or `/order marions` \n\nTo see the menus, try `/menu` or `/menu bobs` or `/menu marions`';
                 response = {
                     text,
-                };
+                }
             } else {
                 menuSelected = cafe.toLowerCase() === 'bobs' ? menu.bobsMenu : menu.marionsMenu; // get specific menu
                 response = {
@@ -79,8 +91,98 @@ function getMenu (options) {
     }
 }
 
-function orderSelectedFood(options) {
-    // start an order
+function startOrder (options) {
+
+    try {
+        const { cafe, slackReqObj } = options;
+        const cafeOptions = [
+            {
+                text: 'Bobs',
+                value: 'bobs'
+            },
+            {
+                text: 'Kibanda',
+                value: 'kibanda'
+            }
+        ];
+        let response;
+
+        if (cafe === undefined) {
+            response = {
+                text: 'All menus',
+                attachments: [{
+                    text: 'Select Cafe',
+                    fallback: 'Select Cafe',
+                    color: '#2c963f',
+                    mrkdwn: true,
+                    mrkdwn_in: ['text'],
+                    attachment_type: 'default',
+                    callback_id: 'select_cafe',
+                    actions: [{
+                        name: 'pick_lunch_items',
+                        title: 'Make an order',
+                        text: 'Order',
+                        type: 'select',
+                        options: cafeOptions
+                    }],
+                }]
+            }
+        } else {
+
+            if (cafe === 'bobs') {
+                response = {
+                    text: `Bobs menu.`,
+                    mrkdwn: true,
+                    mrkdwn_in: ['text'],
+                    attachments: [{
+                        text: 'Select Item',
+                        fallback: 'Select Item',
+                        color: '#2c963f',
+                        mrkdwn: true,
+                        mrkdwn_in: ['text'],
+                        attachment_type: 'default',
+                        callback_id: 'order_lunch',
+                        actions: [{
+                            name: 'pick_lunch_items',
+                            title: 'Make an order',
+                            text: 'Order',
+                            type: 'select',
+                            options: getMenu({cafe, slackReqObj })
+                        }],
+                    }]
+                }
+            } else {
+                response = {
+                    text: `Kibandas menu.`,
+                    mrkdwn: true,
+                    mrkdwn_in: ['text'],
+                    attachments: [{
+                        text: 'Select Item',
+                        fallback: 'Select Item',
+                        color: '#2c963f',
+                        mrkdwn: true,
+                        mrkdwn_in: ['text'],
+                        attachment_type: 'default',
+                        callback_id: 'order_lunch',
+                        actions: [{
+                            name: 'pick_lunch_items',
+                            title: 'Make an order',
+                            text: 'Order',
+                            type: 'select',
+                            options: getMenu({ cafe, slackReqObj })
+                        }],
+                    }]
+                }
+            }
+        }
+        return response;
+    } catch (err) {
+        throw err;
+    }
 }
 
-module.exports = { getMenu, orderSelectedFood };
+function makeOrder (options) {
+
+}
+
+module.exports = { showMenu, startOrder, makeOrder };
