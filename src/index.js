@@ -118,13 +118,20 @@ function startOrder (options) {
                     mrkdwn_in: ['text'],
                     attachment_type: 'default',
                     callback_id: 'select_cafe',
-                    actions: [{
-                        name: 'pick_lunch_items',
-                        title: 'Make an order',
-                        text: 'Order',
-                        type: 'select',
-                        options: cafeOptions
-                    }],
+                    actions: [
+                        {
+                            name: 'kibandaCafe',
+                            text: 'Kibanda',
+                            type: 'button',
+                            value: 'kibanda'
+                        },
+                        {
+                            name: 'bobsCafe',
+                            text: 'Bobs',
+                            type: 'button',
+                            value: 'bobs'
+                        }
+                    ],
                 }]
             }
         } else {

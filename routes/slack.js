@@ -42,8 +42,7 @@ router.post('/actions', async (req, res) => {
 
         switch (slackReqObj.callback_id) {
             case 'select_cafe':
-                const cafe = slackReqObj.actions[0].selected_options[0].value;
-
+                const cafe = slackReqObj.actions[0].value;
                 response = startOrder({ cafe, slackReqObj });
                 break;
             case 'order_lunch':
