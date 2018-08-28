@@ -6,24 +6,36 @@ const db = dbSetup('menu');
 const orderSchema = new mongoose.Schema({
     person: {
         type: String,
-        required: true
-    },
-    phone: {
-        type: String,
-        required: true,
-        validate: {
-            validator: function (value) {
-                return /\+\d{13}/.test(value);
-            },
-            message: 'Invalid phone number'
-        }
+        required: [
+            true,
+            'Person is required'
+        ]
     },
     item: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Item',
-        required: true, 
+        required: [
+            true,
+            'Item is required'
+        ]
     },
-    paid: {
+    vendor: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Vendor',
+        required: [
+            true,
+            'Vendor is required'
+        ]
+    },
+    amount: {
+        type: Number,
+        min: 0,
+        required: [
+            true,
+            'Amount is required'
+        ]
+    },
+    status: {
         type: Boolean,
         default: false
     }
