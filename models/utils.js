@@ -22,14 +22,10 @@ const pickModel = (modelTag)=> {
     return model;
 }
 
-const wrapData = (data) => {
-    return data instanceof Error ? { failure: data } : { success: data }
-}
-
 const getAll = async (modelTag) => {
     const Model = pickModel(modelTag);
     const data = await Model.find({}, null);
-    return wrapData(data);
+    return data;
 }
 
 const get = async (modelTag, lookup) => {
@@ -42,17 +38,17 @@ const get = async (modelTag, lookup) => {
     const Model = pickModel(modelTag);
 
     const data = await Model.findOne(query, null, { lean: true });
-    return wrapData(data);
+    return data;
 }
 
-const create = async (modelTag, details) => {
+const create = async (modelTag, details={}) => {
     const Model = pickModel(modelTag);
 
     const data = await Model.create(details);
-    return wrapData(data);
+    return data;
 }
 
-const update = async (modelTag, _id, updates) => {
+const update = async (modelTag, _id, updates={}) => {
     const query = { _id };
     const Model = pickModel(modelTag);
 
@@ -61,16 +57,16 @@ const update = async (modelTag, _id, updates) => {
         upsert: true
     }
 
-    const data = await Model.updateOne(query, updates, options)
-    return wrapData(data);
+    const data = await Model.updateOne(query, updates={}, options)
+    return data;
 }
 
 const delete_ = async (modelTag, _id) => {
     const query = { _id };
     const Model = pickModel(modelTag);
 
-    const data = await Model.deleteOne(query)
-    return wrapData(data);
+    const data = await Model.deleteOne(query);
+    return data;
 }
 
 module.exports = {
