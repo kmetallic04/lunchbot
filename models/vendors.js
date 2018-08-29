@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
-const db       = require('./db.setup')('menu');
+const { selectDb } = require('../src/utils');
+
+const db = selectDb();
 
 const vendorSchema = new mongoose.Schema({
     name: {
