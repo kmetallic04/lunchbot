@@ -27,8 +27,7 @@ const selectDb = () => {
 const sendServerError = (res, error, message = null) => {
     return res.status(500).send({
         status: 500,
-        message: message || 'Internal Server Error!',
-        data: error
+        message: message || 'Internal Server Error!'
     });
 }
 
@@ -40,9 +39,18 @@ const sendValidationError = (res, error, message = null) => {
     });
 }
 
+const sendResults = (res, results, message = null) => {
+    return res.status(200).send({
+        status: 200,
+        message: message || 'Success',
+        data: results
+    });
+}
+
 module.exports = {
     log,
     selectDb,
     sendServerError,
-    sendValidationError
+    sendValidationError,
+    sendResults
 }
