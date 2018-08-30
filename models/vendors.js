@@ -20,13 +20,7 @@ const vendorSchema = new mongoose.Schema({
         required: [
             true,
             'Phone number is required'
-        ],
-        validate: {
-            validator: function (value) {
-                return /\+\d{12}/.test(value);
-            },
-            message: 'Invalid phone number'
-        }
+        ]
     },
     checkout: {
         type: Map,
