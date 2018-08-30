@@ -25,34 +25,6 @@ describe('Vendor Model', function () {
             });
             done();
         });
-
-        it('must have valid phone number', done => {
-            options.phone = '0700595009'
-            let vendor = new Vendor(options);
-            vendor.validate(e => {
-                expect(e.errors.phone).to.exist;
-                expect(e.errors.phone.message).to.equal('Invalid phone number');
-            });
-            done();
-        });
-    });
-
-    it.skip('checks vendor already registered', done => {
-        let options = {
-            name: 'Kbanda',
-            phone: '+254700595009',
-            checkout: {
-                BusinessNo: '888888',
-                AccountNo: '123445'
-            }
-        }
-        let vendor1 = new Vendor(options);
-        let vendor2 = new Vendor(options);
-        vendor2.validate( e => {
-            expect(e.errors.name).to.exist;
-            expect(e.errors.name.message).to.equal('Vendor already exists');
-        });
-        done();
     });
 });
 

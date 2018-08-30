@@ -1,7 +1,7 @@
 const expect = require('chai').expect;
 const Order = require('../../models/orders');
 
-describe.only('Order', function () {
+describe('Order', function () {
 
     describe('validation', function () {
         const options = {};
