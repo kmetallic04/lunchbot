@@ -7,7 +7,7 @@ let {
     create,
     update,
     delete_
-} = require('../../models/utils');
+} = require('../../src/utils/models');
 
 let random, model;
 

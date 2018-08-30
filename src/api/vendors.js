@@ -1,65 +1,42 @@
-const express = require('express');
-const router = express.Router();
+const express  = require('express');
+const router   = express.Router();
 const validate = require('validate.js')
 
 const {
     getAll,
-    getById,
+    search,
     create,
     update,
     delete_
-} = require('../models/utils');
+} = require('../utils/models');
 
 const {
     log,
     sendServerError,
     sendValidationError,
     sendResults
-} = require('../src/utils');
+} = require('../utils');
 
 const _validateParams = (params) => {
     let validationError;
 
     const constraints = {
         name: function (value) {
-            if (validate.isEmpty(value)) {
+            if (value && !validate.isString(value)) {
                 return {
-                    presence: {
-                        message: 'is required'
+                    format: {
+                        message: 'must be a string'
                     }
-                };
-            }
-            if (!validate.isString(value)) {
-                return {
-                    format: 'must be a string'
                 }
-            }
-            return null;
-        },
-        category: function (value) {
-            const categories = [
-                "Drinks",
-                "Meat Dishes",
-                "Vegetable Dishes",
-                "Specials",
-                "Others"
-            ];
-            if (validate.isEmpty(value)) {
-                return {
-                    presence: {
-                        message: 'is required'
-                    }
-                };
             }
             return {
-                inclusion: {
-                    within: categories,
-                    message: 'doesn\'t exist'
+                presence: {
+                    message: 'is required'
                 }
             }
-            return null;
         },
-        price: function (value) {
+        phone: function (value) {
+
             if (validate.isEmpty(value)) {
                 return {
                     presence: {
@@ -67,17 +44,13 @@ const _validateParams = (params) => {
                     }
                 };
             }
-            if (!validate.isNumber(value)) {
+            if (!(/^\+\d{1,3}\d{3,}$/).test(value)) {
                 return {
-                    format: 'must be a number.'
+                    format: 'invalid phone number'
                 };
             }
+
             return null;
-        },
-        vendor: {
-            presence: {
-                message: 'is required'
-            }
         }
     }
 
@@ -97,8 +70,8 @@ const _validateParams = (params) => {
 }
 
 router.get('/', (req, res) => {
-    getAll('item')
-        .then(result => {
+    getAll('vendor')
+        .then( result => {
             sendResults(res, result);
         })
         .catch(err => {
@@ -107,9 +80,9 @@ router.get('/', (req, res) => {
         });
 });
 
-router.get('/item/:id', (req, res) => {
-    const id = req.params.id;
-    getById('item', id)
+router.get('/vendor/:name', (req, res) => {
+    const name = req.params.name;
+    search('vendor', 'name', name)
         .then(result => {
             sendResults(res, result);
         })
@@ -127,13 +100,13 @@ router.post('/create', (req, res) => {
         return sendValidationError(res, validationError);
     }
 
-    create('item', details)
+    create('vendor', details)
         .then(result => {
             sendResults(res, result);
         })
         .catch(err => {
             log.error(err);
-            sendServerError(res);
+            sendServerError(res, err);
         });
 });
 
@@ -146,7 +119,7 @@ router.put('/edit/:id', (req, res) => {
         return sendValidationError(res, validationError);
     }
 
-    update('item', id, updates)
+    update('vendor', id, updates)
         .then(result => {
             sendResults(res, result);
         })
@@ -158,7 +131,7 @@ router.put('/edit/:id', (req, res) => {
 
 router.delete('/delete/:id', (req, res) => {
     const id = req.params.id;
-    delete_('item', id)
+    delete_('vendor', id)
         .then(result => {
             sendResults(res, result);
         })

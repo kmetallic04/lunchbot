@@ -4,10 +4,10 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-var slackRoutes = require('./routes/slack');
-var vendorRoutes = require('./routes/vendors');
-var orderRoutes = require('./routes/orders');
-var itemRoutes = require('./routes/items');
+var slackRoutes = require('./src/api/slack');
+var vendorRoutes = require('./src/api/vendors');
+var orderRoutes = require('./src/api/orders');
+var itemRoutes = require('./src/api/items');
 
 var app = express();
 

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { selectDb } = require('../src/utils');
+const { selectDb } = require('../utils');
 
 const db = selectDb();
 

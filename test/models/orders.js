@@ -1,5 +1,5 @@
 const expect = require('chai').expect;
-const Order = require('../../models/orders');
+const Order = require('../../src/models/orders');
 
 describe('Order', function () {
 
