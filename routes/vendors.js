@@ -34,6 +34,23 @@ const _validateParams = (params) => {
                     message: 'is required'
                 }
             }
+        },
+        phone: function (value) {
+
+            if (validate.isEmpty(value)) {
+                return {
+                    presence: {
+                        message: 'is required'
+                    }
+                };
+            }
+            if (!(/^\+\d{1,3}\d{3,}$/).test(value)) {
+                return {
+                    format: 'invalid phone number'
+                };
+            }
+
+            return null;
         }
     }
 
