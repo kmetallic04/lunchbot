@@ -1,6 +1,6 @@
 const Vendor = require('./vendors');
-// const Item   = require('../models/items');
-// const Order  = require('../models/orders');
+const Item   = require('../models/items');
+const Order  = require('../models/orders');
 
 const { log } = require('../src/utils');
 
@@ -10,12 +10,12 @@ const pickModel = (modelTag)=> {
         case 'vendor':
             model = Vendor;
             break;
-        // case 'item':
-        //     model = Item;
-        //     break;
-        // case 'order':
-        //     model = Order;
-        //     break;
+        case 'item':
+            model = Item;
+            break;
+        case 'order':
+            model = Order;
+            break;
         default:
             log.error('Unknown model tag. Bad thing!!');
     }
