@@ -6,6 +6,7 @@ var logger = require('morgan');
 
 var slackRoutes = require('./routes/slack');
 var vendorRoutes = require('./routes/vendors');
+var orderRoutes = require('./routes/orders');
 
 var app = express();
 
@@ -17,6 +18,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/slack', slackRoutes);
 app.use('/vendors', vendorRoutes);
+app.use('/orders', orderRoutes);
 
 // 404
 app.use((req, res) => {
