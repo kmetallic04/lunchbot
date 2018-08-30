@@ -63,7 +63,7 @@ const update = async (modelTag, _id, updates={}) => {
         upsert: true
     }
 
-    const data = await Model.updateOne(query, updates={}, options)
+    const data = await Model.updateOne(query, updates, options)
     return data;
 }
 
