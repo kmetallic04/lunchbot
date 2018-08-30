@@ -8,14 +8,14 @@ const {
     create,
     update,
     delete_
-} = require('../models/utils');
+} = require('../utils/models');
 
 const {
     log,
     sendServerError,
     sendValidationError,
     sendResults
-} = require('../src/utils');
+} = require('../utils');
 
 const _validateParams = (params) => {
     let validationError;

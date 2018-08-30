@@ -1,4 +1,4 @@
-const Vendor = require('../../models/vendors');
+const Vendor = require('../../src/models/vendors');
 const expect = require('chai').expect;
 
 describe('Vendor Model', function () {

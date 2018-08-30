@@ -1,5 +1,5 @@
 const expect = require('chai').expect;
-const Item = require('../../models/items');
+const Item = require('../../src/models/items');
 
 describe('Item', function () {
 

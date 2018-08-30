@@ -5,9 +5,9 @@ const {
     showMenu,
     startOrder,
     makeOrder
-} = require('../src');
+} = require('..');
 
-const { log } = require('../src/utils');
+const { log } = require('../utils');
 
 router.post('/command/menu', function (req, res, next) {
     try {
