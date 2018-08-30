@@ -1,6 +1,7 @@
 const mongoose        = require('mongoose');
-const dbSetup         = require('./db.setup');
-const db = dbSetup('menu');
+const { selectDb } = require('../src/utils');
+
+const db = selectDb();
 
 //Orders Schema
 const orderSchema = new mongoose.Schema({
