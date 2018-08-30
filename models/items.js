@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
-const db       = require('./db.setup')('menu');
+const { selectDb } = require('../src/utils');
+
+const db = selectDb();
 
 //Menu items Schema
 const categories = ["Drinks", "Meat Dishes", "Vegetable Dishes", "Specials", "Others"];

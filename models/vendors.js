@@ -1,6 +1,7 @@
-const mongoose        = require('mongoose');
-const dbSetup         = require('./db.setup');
-const db = dbSetup('menu');
+const mongoose = require('mongoose');
+const { selectDb } = require('../src/utils');
+
+const db = selectDb();
 
 const vendorSchema = new mongoose.Schema({
     name: {
@@ -19,13 +20,11 @@ const vendorSchema = new mongoose.Schema({
         required: [
             true,
             'Phone number is required'
-        ],
-        validate: {
-            validator: function (value) {
-                return /\+\d{13}/.test(value);
-            },
-            message: 'Invalid phone number'
-        }
+        ]
+    },
+    checkout: {
+        type: Map,
+        of: String
     }
 });
 
