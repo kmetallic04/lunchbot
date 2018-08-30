@@ -28,16 +28,22 @@ const getAll = async (modelTag) => {
     return data;
 }
 
-const get = async (modelTag, lookup) => {
-    const query = {
-        name: {
-            $regex: lookup,
-            $options: 'i'
-        }
+const search = async (modelTag, lookup, pattern) => {
+    const query = {}
+    query[lookup] = {
+        $regex: pattern,
+        $options: 'i'
     }
     const Model = pickModel(modelTag);
 
     const data = await Model.findOne(query, null, { lean: true });
+    return data;
+}
+
+const getById = async (modelTag, _id, filter=null) => {
+    const Model = pickModel(modelTag);
+
+    const data = await Model.findById(_id, filter);
     return data;
 }
 
@@ -71,7 +77,8 @@ const delete_ = async (modelTag, _id) => {
 
 module.exports = {
     getAll,
-    get,
+    getById,
+    search,
     create,
     update,
     delete_

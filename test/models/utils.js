@@ -2,7 +2,8 @@ const expect = require('chai').expect;
 
 let {
     getAll,
-    get,
+    getById,
+    search,
     create,
     update,
     delete_
@@ -54,8 +55,8 @@ describe('Model Utils', function () {
         done();
     });
 
-    it('get() throws error on failure', done => {
-        get(model)
+    it('search() throws error on failure', done => {
+        search(model)
             .then(resp => {
                 expect(resp).to.have.property('failure');
             })
@@ -66,8 +67,32 @@ describe('Model Utils', function () {
         done();
     });
 
-    it('get() wraps data on success', done => {
-        get(model)
+    it('search() wraps data on success', done => {
+        search(model)
+            .then(resp => {
+                expect(resp).to.have.property('success');
+            })
+            .catch(err => {
+                // console.log(err);
+                expect(err).to.have.property('errors');
+            })
+        done();
+    });
+
+    it('getById() throws error on failure', done => {
+        getById(model)
+            .then(resp => {
+                expect(resp).to.have.property('failure');
+            })
+            .catch(err => {
+                // console.log(err);
+                expect(err).to.have.property('errors');
+            })
+        done();
+    });
+
+    it('getById() wraps data on success', done => {
+        getById(model)
             .then(resp => {
                 expect(resp).to.have.property('success');
             })

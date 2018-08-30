@@ -4,7 +4,7 @@ const validate = require('validate.js')
 
 const {
     getAll,
-    get,
+    search,
     create,
     update,
     delete_
@@ -82,7 +82,7 @@ router.get('/', (req, res) => {
 
 router.get('/vendor/:name', (req, res) => {
     const name = req.params.name;
-    get('vendor', name)
+    search('vendor', 'name', name)
         .then(result => {
             sendResults(res, result);
         })
