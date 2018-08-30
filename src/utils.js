@@ -25,9 +25,14 @@ const selectDb = () => {
 }
 
 const sendServerError = (res, error, message = null) => {
+    let data;
+    if (process.env.NODE_ENV !== 'production') {
+        data = error;
+    }
     return res.status(500).send({
         status: 500,
-        message: message || 'Internal Server Error!'
+        message: message || 'Internal Server Error!',
+        data
     });
 }
 
@@ -35,7 +40,7 @@ const sendValidationError = (res, error, message = null) => {
     return res.status(400).send({
         status: 400,
         message: message || 'Bad request!',
-        data: error
+        data: error.message
     });
 }
 
