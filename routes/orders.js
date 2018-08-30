@@ -31,7 +31,7 @@ const _validateParams = (params) => {
             }
             if (!validate.isObject(value)) {
                 return {
-                    format: 'must be a string'
+                    format: 'must be an object'
                 }
             }
             return null;

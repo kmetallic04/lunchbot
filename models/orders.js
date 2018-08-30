@@ -6,7 +6,7 @@ const db = selectDb();
 //Orders Schema
 const orderSchema = new mongoose.Schema({
     person: {
-        type: String,
+        type: Object,
         required: [
             true,
             'Person is required'
@@ -36,7 +36,7 @@ const orderSchema = new mongoose.Schema({
             'Amount is required'
         ]
     },
-    status: {
+    paid: {
         type: Boolean,
         default: false
     }
