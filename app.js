@@ -4,7 +4,6 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-var indexRoute = require('./routes/index');
 var slackRoutes = require('./routes/slack');
 var vendorRoutes = require('./routes/vendors');
 
@@ -16,7 +15,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRoute);
 app.use('/slack', slackRoutes);
 app.use('/vendors', vendorRoutes);
 
