@@ -113,7 +113,7 @@ router.post('/create', (req, res) => {
     const validationError = _validateParams(details);
 
     if (validationError) {
-        sendValidationError(res, validationError);
+        return sendValidationError(res, validationError);
     }
 
     create('order', details)
@@ -132,7 +132,7 @@ router.put('/edit/:id', (req, res) => {
     const validationError = _validateParams(updates);
 
     if (validationError) {
-        sendValidationError(res, validationError);
+        return sendValidationError(res, validationError);
     }
 
     update('order', id, updates)
