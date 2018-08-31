@@ -1,0 +1,22 @@
+doctype html
+html
+    head
+        meta(name="viewport", content="width=device-width, initial-scale=1")
+        link(rel='stylesheet', href='/stylesheets/css/main.css')
+
+    body
+        .container
+            .navigation
+                #banner
+                    h1.header#main LUNCHBOT
+                    h4.header management dashboard
+                .navs
+                    a#orders.btn.nav orders
+                    .dropdown.nav
+                        a.btn.nav Manage
+                        .dropdown-content
+                            a.drop#vendors vendors
+                            a.drop#items items
+            #clear
+            block content
+        script(src='js/main.js')
