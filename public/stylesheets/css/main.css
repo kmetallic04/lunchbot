@@ -1,0 +1,110 @@
+body {
+  margin: 0;
+  font: 18px "Lucida Grande", Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-flow: center;
+  justify-content: center; }
+
+.container {
+  display: grid;
+  grid-template-rows: 100px 30px auto;
+  max-width: 1024px; }
+
+a {
+  color: #00B7FF; }
+
+.view {
+  padding: 0 1em 0 1em; }
+  .view .header {
+    text-transform: uppercase; }
+  .view #top {
+    display: grid;
+    grid-template-columns: 70% 30%; }
+  .view #top .dropdown,
+  .view #actions {
+    display: flex;
+    flex-direction: row wrap;
+    justify-content: flex-end;
+    align-items: center; }
+
+.hidden {
+  display: none; }
+
+.nav {
+  width: 150px; }
+
+.btn {
+  padding: 0.8em;
+  margin: 1em;
+  color: black;
+  border: 1px solid rgba(0, 0, 0, 0.274);
+  text-align: center;
+  text-transform: uppercase; }
+
+.btn.nav {
+  width: 150px !important;
+  border-radius: 5px; }
+
+.btn.select {
+  padding: 0.5em 1em 0.5em 1em; }
+
+.btn.action {
+  width: 100px !important; }
+
+.dropdown .btn {
+  border-radius: 3px; }
+
+.dropdown-content {
+  display: none;
+  border-radius: 0; }
+
+.navigation {
+  display: grid;
+  grid-template-columns: 50% 50%;
+  grid-gap: auto;
+  width: 1024px;
+  border: 1px solid rgba(0, 0, 0, 0.274); }
+  .navigation #banner {
+    padding: 1em;
+    display: grid;
+    grid-template-rows: 70% 30%;
+    grid-gap: auto; }
+    .navigation #banner * {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around; }
+  .navigation .navs {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-end;
+    align-items: center; }
+
+@media only screen and (max-width: 600px) {
+  #banner {
+    width: 100vw;
+    height: 40%; } }
+
+table {
+  width: 100%;
+  border: 2px solid black;
+  border-collapse: collapse; }
+  table tr {
+    height: 1.8em; }
+    table tr * {
+      margin: 0 !important;
+      padding: 0 !important; }
+    table tr th {
+      text-transform: uppercase;
+      border: 2px solid black; }
+    table tr td {
+      text-align: center;
+      border-left: 2px solid black;
+      border-right: 2px solid black; }
+  table tr:nth-child(1) {
+    height: 2.5em; }
+  table tr:nth-child(even) {
+    background-color: #f2f2f2; }
+
+/*# sourceMappingURL=main.css.map */
