@@ -1,90 +1,69 @@
 const { log } = require('./utils');
+const {
+    getAll,
+    getById,
+    create,
+    update,
+    delete_
+} = require('./utils/models');
 
-// TODO: set up db
+// TODO: Get all menu items or filter by a specific menu.
 
-function getMenu(options) {
-    // TODO: return specific menu from db
+function getMenu(options=null) {
+    let filter = options? {vendor: options}: options;
+    return getAll('item', filter).then( result => {
+        return result;
+    });
 }
 
-function showMenu(options) {
-
-    // placeholder
-    const menu = {
-        bobsMenu: [
-            {
-                text: 'Rice Beef: 300',
-                value: 1,
-            },
-            {
-                text: 'Ugali managu: 180',
-                value: 2,
-            },
-        ],
-        marionsMenu: [
-            {
-                text: 'Rice Beef: 300',
-                value: 1,
-            },
-            {
-                text: 'Ugali managu: 180',
-                value: 2,
-            },
-        ]
-    }
-    function markDownMenu(menu) {
-        let formattedMenu;
-        Objects.options(menu)
-            .forEach(([key, value]) => {
-                console.log(key, value);
+async function showMenu(options) {
+    
+    //Add text and value fields for each menu item
+    const fixMenu = (items) => {
+        let _menu = [];
+        items.forEach( item => {
+            _menu.push({
+                name: item.name,
+                text: item.name + ': KES'+ item.price,
+                value: item._id
             });
-        return formattedMenu;
-    }
+        });
+        console.log(_menu);
+        return _menu;
+    };
 
+    
     try {
-        let response, menuSelected;
+        let response, menu, _text;
         const { cafe, slackReqObj } = options;
 
         if (cafe === 'all') {
-            menuSelected = menu;
-            // create a response with all the menus
-            response = {
-                text: 'All menus',
-                attachments: [{
-                    text: markDownMenu,
-                    fallback: markDownMenu,
-                    color: '#2c963f',
-                    mrkdwn: true,
-                    mrkdwn_in: ['text'],
-                    attachment_type: 'default',
-                    callback_id: 'order_selected',
-                    actions: [{
-                        name: 'pick_lunch_items',
-                        title: 'Make an order',
-                        text: 'Order',
-                        type: 'button',
-                    }],
-                }]
-            }
+            menu = await getMenu().then(fixMenu);
+            _text = 'All menus'; 
         } else {
-            const vendors = ['bobs', 'marions'];
-
-            if (!vendors.includes(cafe.toLowerCase())) {
-                const slackReqObjString = JSON.stringify(slackReqObj);
-                log.error(new Error(`Cafe ${cafe} selected is not among the current lunch delivery partners. slackReqObj: ${slackReqObjString}`));
-
-                const text = 'Hmmm, Currently, you can only order lunch from BOB or MARION\'s cafes.\n\nTry `/order bobs` or `/order marions` \n\nTo see the menus, try `/menu` or `/menu bobs` or `/menu marions`';
-                response = {
-                    text,
-                }
-            } else {
-                menuSelected = cafe.toLowerCase() === 'bobs' ? menu.bobsMenu : menu.marionsMenu; // get specific menu
-                response = {
-                    text: `${cafe} menu.`,
-                    mrkdwn: true,
-                    mrkdwn_in: ['text'],
-                }
-            }
+            menu = await getMenu(cafe).then(fixMenu);
+            _text = `${cafe}'s menu.`;
         }
+        
+        response = {
+            text: _text,
+            attachments: [{
+                text: 'Select item',
+                fallback: 'Select item',
+                color: '#2c963f',
+                mrkdwn: true,
+                mrkdwn_in: ['text'],
+                attachment_type: 'default',
+                callback_id: 'pick_lunch_items',
+                actions: [{
+                    name: 'pick_lunch_items',
+                    title: 'Pick an item',
+                    text: 'Order',
+                    type: 'select',
+                    options: menu
+                }],
+            }]
+        };
         return response;
     } catch (err) {
         throw err;
@@ -188,8 +167,33 @@ function startOrder (options) {
     }
 }
 
-function makeOrder (options) {
-
+function selectMore () {
+    return {
+        text: 'Order taken',
+        attachments: [{
+            text: 'Would you like to order anything else?',
+            fallback: 'Would you like to order anything else?',
+            color: '#2c963f',
+            mrkdwn: true,
+            mrkdwn_in: ['text'],
+            attachment_type: 'default',
+            callback_id: 'select_more',
+            actions: [
+                {
+                    name: 'addMore',
+                    text: 'Sure',
+                    type: 'button',
+                    value: 'true'
+                },
+                {
+                    name: 'checkout',
+                    text: 'Nah',
+                    type: 'button',
+                    value: 'false'
+                }
+            ],
+        }]
+    };
 }
 
-module.exports = { showMenu, startOrder, makeOrder };
+module.exports = { showMenu, startOrder, selectMore };

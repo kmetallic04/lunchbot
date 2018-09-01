@@ -22,9 +22,9 @@ const pickModel = (modelTag)=> {
     return model;
 }
 
-const getAll = async (modelTag) => {
+const getAll = async (modelTag, filter = null) => {
     const Model = pickModel(modelTag);
-    const data = await Model.find({}, null);
+    const data = await Model.find({}, filter);
     return data;
 }
 

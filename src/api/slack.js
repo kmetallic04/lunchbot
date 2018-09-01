@@ -4,17 +4,18 @@ const router = express.Router();
 const {
     showMenu,
     startOrder,
-    makeOrder
+    selectMore
 } = require('..');
 
 const { log } = require('../utils');
 
-router.post('/command/menu', function (req, res, next) {
+router.post('/command/menu', async function (req, res, next) {
     try {
         const cafe = req.body.text? req.body.text : 'all';
+        req.cafe = cafe;
         const slackReqObj = req.body;
 
-        const response = showMenu({ cafe, slackReqObj });
+        const response = await showMenu({ cafe, slackReqObj });
         return res.json(response);
     } catch (err) {
         log.error(err);
@@ -38,15 +39,26 @@ router.post('/command/order', function (req, res, next) {
 router.post('/actions', async (req, res) => {
     try {
         const slackReqObj = JSON.parse(req.body.payload);
+
+        const cafe = req.cafe;
         let response;
 
+        //remember to remove this line
+        console.log(slackReqObj);
+
         switch (slackReqObj.callback_id) {
-            case 'select_cafe':
-                const cafe = slackReqObj.actions[0].value;
-                response = startOrder({ cafe, slackReqObj });
+            case 'pick_lunch_items':
+                const item = slackReqObj.actions[0].selected_options[0];
+                req.items = req.items ? req.items.append(item) : [item];
+                response = selectMore();
                 break;
-            case 'order_lunch':
-                response = makeOrder({ slackReqObj });
+            case 'select_more':
+                if(slackReqObj.actions[0].value == 'true'){
+                    response = await showMenu({cafe, slackReqObj});
+                }else{
+                    //do something else
+                    return res.json('Done.')
+                }
                 break;
         }
 
