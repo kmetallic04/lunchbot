@@ -20,10 +20,6 @@ body {
     max-width: 1024px;
 }
 
-a {
-    color: #00B7FF;
-}
-
 .view {
     padding: 0 1em 0 1em;
 
@@ -33,10 +29,10 @@ a {
 
     #top {
         display: grid;
-        grid-template-columns: 70% 30%;
+        grid-template-columns: 50% 50%;
     }
 
-    #top .dropdown,
+    #top .filters,
     #actions {
         display: flex;
         flex-direction: row wrap;
