@@ -92,8 +92,6 @@ class App extends React.Component {
             };
         }
 
-        console.log(id, filters)
-
         const filteredData = this.filterData(data, filters);
 
         this.setState({
@@ -115,14 +113,14 @@ class App extends React.Component {
                 });
                 break;
             case 'vendors':
+                this.getData('/vendors', 'vendors');
                 this.setState({
-                    page: 'vendors',
                     manage: false
                 });
                 break;
             case 'items':
+                this.getData('/items', 'items');
                 this.setState({
-                    page: 'orders',
                     manage: false
                 });
                 break;
@@ -134,16 +132,15 @@ class App extends React.Component {
     render() {
         const {
             filteredData,
-            filters
         } = this.state;
         return (
             <div classNameName="container">
                 <Navigation clickFunction={this.handleClick} manage={this.state.manage}/>
                 <div id="clear"></div>
                 {
-                    this.state.page === 'vendors' ? <Vendors data={filteredData} clickFunction={this.handleClick} filters={filters}/> :
-                    this.state.page === 'items' ? <Items data={filteredData} clickFunction={this.handleClick} filterFunction={this.handleFilter} filters={filters}/> :
-                    <Orders data={filteredData} clickFunction={this.handleClick} filterFunction={this.handleFilter} filters={filters}/>
+                    this.state.page === 'vendors' ? <Vendors data={filteredData} clickFunction={this.handleClick}/> :
+                    this.state.page === 'items' ? <Items data={filteredData} clickFunction={this.handleClick} filterFunction={this.handleFilter}/> :
+                    <Orders data={filteredData} clickFunction={this.handleClick} filterFunction={this.handleFilter}/>
                 }
             </div>
         );
@@ -189,7 +186,6 @@ class Orders extends React.Component {
 
         const {
             data,
-            filters,
             clickFunction,
             filterFunction
         } = this.props;
@@ -210,8 +206,8 @@ class Orders extends React.Component {
                     <h3 className="header">{new Date().toISOString().substring(0, 10)} | LUNCH ORDERS</h3>
                     <div className="filters">
                         <h4>Filter by: </h4>
-                        <Filter options={Array.from(vendors)} filterFunction={filterFunction} id={'vendor-filter'} label={'Vendor'} filterField={filters[0]}/>
-                        <Filter options={statuses} filterFunction={filterFunction} id={'status-filter'} label={'Status'} filterField={filters[1]}/>
+                        <Filter options={Array.from(vendors)} filterFunction={filterFunction} id={'vendor-filter'} label={'Vendor'}/>
+                        <Filter options={statuses} filterFunction={filterFunction} id={'status-filter'} label={'Status'}/>
                     </div>
                 </div>
                 <table>
@@ -279,10 +275,20 @@ class Items extends React.Component {
     render () {
         const {
             data,
-            clickFunction
+            clickFunction,
+            filterFunction
         } = this.props;
 
+        let vendors = new Set();
+        let categories = new Set();
+
         const rowItems = data.map(item => {
+            if (!vendors.has(item.vendor)) {
+                vendors.add(item.vendor);
+            }
+            if (!categories.has(item.category)) {
+                categories.add(item.category);
+            }
             return <ItemRow item={item} />;
         })
 
@@ -290,12 +296,10 @@ class Items extends React.Component {
             <div className="view" id="items">
                 <div id="top">
                     <h3 className="header">MENU ITEMS</h3>
-                    <div className="dropdown">
-                        <a className="btn select" id="itemsFilter" onClick={clickFunction}>Filter</a>
-                        <div className="dropdown-content">
-                            <a className="drop" id="vendor" onClick={clickFunction}>vendor</a>
-                            <a className="drop" id="category" onClick={clickFunction}>category</a>
-                        </div>
+                    <div className="filters">
+                        <h4>Filter by: </h4>
+                        <Filter options={Array.from(vendors)} filterFunction={filterFunction} id={'vendor-filter'} label={'Vendor'}/>
+                        <Filter options={Array.from(categories)} filterFunction={filterFunction} id={'category-filter'} label={'Category'}/>
                     </div>
                 </div>
                 <table>
@@ -341,9 +345,9 @@ class VendorRow extends React.Component {
         return (
             <tr>
                 <td>{vendor.name}</td>
-                <td>{vendor.items.length}</td>
-                <td>{vendor.checkout.paybill}</td>
-                <td>{vendor.checkout.tillno}</td>
+                <td>{30}</td>
+                <td>{vendor.checkout === undefined ? '-' : 'YES'}</td>
+                <td>{vendor.checkout === undefined ? '-' : 'YES'}</td>
             </tr>
         )
     }
@@ -378,7 +382,6 @@ class Filter extends React.Component {
     render () {
         const {
             options,
-            filterField,
             filterFunction,
             id,
             label
