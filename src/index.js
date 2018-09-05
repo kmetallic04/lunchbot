@@ -1,17 +1,22 @@
-const { log } = require('./utils');
+const { log }   =   require('./utils');
+const axios     =   require('axios');
+require('dotenv').load();
+
 const {
     getAll,
     getById,
     create,
     update,
-    delete_
+    delete_,
+    search
 } = require('./utils/models');
 
-// TODO: Get all menu items or filter by a specific menu.
+async function getMenu(options=null) {
+    const filter = options? await search('vendor', 'name', options).then( (_vendor) => {
+        return {vendor : _vendor._id};
+    }): options;
 
-function getMenu(options=null) {
-    let filter = options? {vendor: options}: options;
-    return getAll('item', filter).then( result => {
+    return await getAll('item', filter).then( result => {
         return result;
     });
 }
@@ -28,7 +33,6 @@ async function showMenu(options) {
                 value: item._id
             });
         });
-        console.log(_menu);
         return _menu;
     };
 
@@ -70,130 +74,175 @@ async function showMenu(options) {
     }
 }
 
-function startOrder (options) {
-
-    try {
-        const { cafe, slackReqObj } = options;
-        const cafeOptions = [
-            {
-                text: 'Bobs',
-                value: 'bobs'
-            },
-            {
-                text: 'Kibanda',
-                value: 'kibanda'
-            }
-        ];
-        let response;
-
-        if (cafe === undefined) {
-            response = {
-                text: 'All menus',
-                attachments: [{
-                    text: 'Select Cafe',
-                    fallback: 'Select Cafe',
-                    color: '#2c963f',
-                    mrkdwn: true,
-                    mrkdwn_in: ['text'],
-                    attachment_type: 'default',
-                    callback_id: 'select_cafe',
-                    actions: [
-                        {
-                            name: 'kibandaCafe',
-                            text: 'Kibanda',
-                            type: 'button',
-                            value: 'kibanda'
-                        },
-                        {
-                            name: 'bobsCafe',
-                            text: 'Bobs',
-                            type: 'button',
-                            value: 'bobs'
-                        }
-                    ],
-                }]
-            }
-        } else {
-
-            if (cafe === 'bobs') {
-                response = {
-                    text: `Bobs menu.`,
-                    mrkdwn: true,
-                    mrkdwn_in: ['text'],
-                    attachments: [{
-                        text: 'Select Item',
-                        fallback: 'Select Item',
-                        color: '#2c963f',
-                        mrkdwn: true,
-                        mrkdwn_in: ['text'],
-                        attachment_type: 'default',
-                        callback_id: 'order_lunch',
-                        actions: [{
-                            name: 'pick_lunch_items',
-                            title: 'Make an order',
-                            text: 'Order',
-                            type: 'select',
-                            options: getMenu({cafe, slackReqObj })
-                        }],
-                    }]
-                }
-            } else {
-                response = {
-                    text: `Kibandas menu.`,
-                    mrkdwn: true,
-                    mrkdwn_in: ['text'],
-                    attachments: [{
-                        text: 'Select Item',
-                        fallback: 'Select Item',
-                        color: '#2c963f',
-                        mrkdwn: true,
-                        mrkdwn_in: ['text'],
-                        attachment_type: 'default',
-                        callback_id: 'order_lunch',
-                        actions: [{
-                            name: 'pick_lunch_items',
-                            title: 'Make an order',
-                            text: 'Order',
-                            type: 'select',
-                            options: getMenu({ cafe, slackReqObj })
-                        }],
-                    }]
-                }
+async function getSlackUser(userId){
+    return await axios.get(
+        'https://slack.com/api/users.profile.get',
+        {
+            params: {
+                token: process.env.SLACK_TOKEN,
+                user: userId
             }
         }
+    ).then(function(user){
+        return user.data.profile;
+    }).catch(function(err){
+        throw err;
+    });
+}
+
+async function confirmOrder(slackReqObj){
+    const itemObj = slackReqObj.actions[0].selected_options[0];
+    const item = await getById('item', itemObj.value);
+    const vendor = await getById('vendor', item.vendor);
+
+    const user = await getSlackUser(slackReqObj.user.id);
+
+    try{
+        create('order', {
+            person: {
+                name: user.real_name
+            },
+            item: item._id,
+            vendor: vendor._id,
+            amount: item.price
+        });
+
+        let response = {
+            text: 'Order received!',
+            attachments: [{
+                color: '#2c963f',
+                fields: [
+                    {
+                        title: 'Item',
+                        value: item.name,
+                        short: true
+                    },
+                    {
+                        title: 'Price',
+                        value: 'KES ' + item.price,
+                        short: true
+                    }
+                ],
+            }]
+        };
+
+        if(user.phone){
+            response.attachments.push({
+                title: 'Proceed to checkout with this number: ' + user.phone + ' ?',
+                short: false,
+                color: '#2c963f',
+                attachment_type: 'default',
+                callback_id: 'order_selected',
+                actions: [{
+                    name: 'yes',
+                    text: 'Sure',
+                    type: 'button',
+                    value: 'checkout'
+                },
+                {
+                    name: 'other',
+                    text: 'No, I\'ll use a different number',
+                    type: 'button',
+                    value: 'other'
+                },
+                {
+                    name: 'no',
+                    text: 'Nah, I\'ll pay using cash',
+                    type: 'button',
+                    value: 'cash'
+                }]
+            });
+        }else{
+            response.attachments.push({
+                title: 'Would you like to pay via mpesa or cash?',
+                short: false,
+                color: '#2c963f',
+                attachment_type: 'default',
+                callback_id: 'order_selected',
+                actions: [{
+                    name: 'other',
+                    text: 'Via Mpesa',
+                    type: 'button',
+                    value: 'other'
+                },
+                {
+                    name: 'no',
+                    text: 'Nah, I\'ll pay using cash',
+                    type: 'button',
+                    value: 'cash'
+                }]
+            });
+        }
         return response;
-    } catch (err) {
+    }catch(err){
         throw err;
     }
 }
 
-function selectMore () {
+async function processOrder(slackReqObj, phone = null){
+    const user = await getSlackUser(slackReqObj.user.id);
+    const totalCost = await getAll('order', {
+        person: {
+            name: user.real_name
+        },
+        paid: false
+    }).then(function(orders){
+        let price = 0;
+        orders.forEach(function(order){
+            price += order.amount;
+        });
+        return price;
+    }).catch(function(err){
+        console.log(err);
+    });
+
+    //To-do: Intitiate payment using this checkout.
+    //paymentOptions.phoneNumber = phone | user.phone;
+}
+
+function formatMessage(message){
     return {
-        text: 'Order taken',
-        attachments: [{
-            text: 'Would you like to order anything else?',
-            fallback: 'Would you like to order anything else?',
-            color: '#2c963f',
-            mrkdwn: true,
-            mrkdwn_in: ['text'],
-            attachment_type: 'default',
-            callback_id: 'select_more',
-            actions: [
-                {
-                    name: 'addMore',
-                    text: 'Sure',
-                    type: 'button',
-                    value: 'true'
-                },
-                {
-                    name: 'checkout',
-                    text: 'Nah',
-                    type: 'button',
-                    value: 'false'
-                }
-            ],
-        }]
+        attachments: [
+            {
+                title: message,
+                color: '#2c963f',
+                attachment_type: 'default'
+            }
+        ]
     };
 }
 
-module.exports = { showMenu, startOrder, selectMore };
+//To-do: Fix dialog to prompt user to enter number or slack.
+async function getNumber(slackReqObj){
+    return await axios.post(
+        'https://slack.com/api/dialog.open',
+        {
+            trigger_id: slackReqObj.trigger_id,
+            dialog: JSON.stringify({
+                callback_id: "order_lunch",
+                title: "Enter your phone number",
+                submit_label: "Request",
+                notify_on_cancel: true,
+                elements: [
+                {
+                    type: "text",
+                    label: "Mobile No.",
+                    name: "phone",
+                    subtype: 'tel'
+                }]
+            })
+        },
+        {
+            headers: {
+                Authorization: {
+                    bearer: process.env.SLACK_TOKEN
+                }
+            }
+        }
+    ).then(function(result){
+        return result;
+    }).catch(function(err){
+        throw err;
+    });
+}
+module.exports = { showMenu, confirmOrder, processOrder, getNumber, formatMessage};

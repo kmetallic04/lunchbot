@@ -24,7 +24,7 @@ const pickModel = (modelTag)=> {
 
 const getAll = async (modelTag, filter = null) => {
     const Model = pickModel(modelTag);
-    const data = await Model.find({}, filter);
+    const data = await Model.find(filter);
     return data;
 }
 
@@ -81,5 +81,6 @@ module.exports = {
     search,
     create,
     update,
-    delete_
+    delete_,
+    search
 }
