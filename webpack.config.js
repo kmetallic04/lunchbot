@@ -23,8 +23,21 @@ module.exports = {
                         'stage-1'
                     ]
                 }
+            },
+            {
+                test: /\.scss$/,
+                use : [
+                    'style-loader',
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            importLoaders: 1,
+                            minimize: true
+                        }
+                    },
+                    'sass-loader'
+                ]
             }
         ]
     }
 }
-

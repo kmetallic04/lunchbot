@@ -3,9 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var sassMiddleware = require('node-sass-middleware');
 
-var indexRoute = require('./src/routes');
 var slackRoutes = require('./src/api/slack');
 var vendorRoutes = require('./src/api/vendors');
 var orderRoutes = require('./src/api/orders');
@@ -17,12 +15,6 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(sassMiddleware({
-    src: path.join(__dirname, 'public'),
-    dest: path.join(__dirname, 'public'),
-    indentedSyntax: false,
-    sourceMap: true
-}));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/slack', slackRoutes);
