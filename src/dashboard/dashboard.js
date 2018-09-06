@@ -1,5 +1,10 @@
 import React from 'react';
 
+import Navigation from './components/navigation';
+import Orders from './components/orders';
+import Vendors from './components/vendors';
+import Items from './components/items';
+
 class Dashboard extends React.Component {
     constructor(props) {
         super(props);
@@ -137,14 +142,13 @@ class Dashboard extends React.Component {
 
         return (
             <div className="container">
-                <p>Hello there react</p>
-                {/* <Navigation clickFunction={this.handleClick} manage={this.state.manage}/>
+                <Navigation clickFunction={this.handleClick} manage={this.state.manage}/>
                 <div id="clear"></div>
                 {
                     this.state.page === 'vendors' ? <Vendors data={filteredData} clickFunction={this.handleClick}/> :
                     this.state.page === 'items' ? <Items data={filteredData} clickFunction={this.handleClick} filterFunction={this.handleFilter}/> :
                     <Orders data={filteredData} clickFunction={this.handleClick} filterFunction={this.handleFilter}/>
-                } */}
+                }
             </div>
         );
     }
