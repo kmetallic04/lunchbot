@@ -1,15 +1,16 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+var createError     = require('http-errors');
+var express         = require('express');
+var path            = require('path');
+var cookieParser    = require('cookie-parser');
+var logger          = require('morgan');
 
-var slackRoutes = require('./src/api/slack');
-var vendorRoutes = require('./src/api/vendors');
-var orderRoutes = require('./src/api/orders');
-var itemRoutes = require('./src/api/items');
+var slackRoutes     = require('./src/api/slack');
+var vendorRoutes    = require('./src/api/vendors');
+var orderRoutes     = require('./src/api/orders');
+var itemRoutes      = require('./src/api/items');
+var callbackRoutes  = require('./src/api/callbacks');
 
-var app = express();
+var app             = express();
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -21,6 +22,7 @@ app.use('/slack', slackRoutes);
 app.use('/vendors', vendorRoutes);
 app.use('/orders', orderRoutes);
 app.use('/items', itemRoutes);
+app.use('/callbacks', callbackRoutes);
 
 // 404
 app.use((req, res) => {

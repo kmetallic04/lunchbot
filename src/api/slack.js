@@ -1,17 +1,18 @@
-const express = require('express');
-const router = express.Router();
+const express   =   require('express');
+const router    =   express.Router();
 
 const {
     showMenu,
     confirmOrder,
-    processOrder,
+    startCheckout,
     getNumber,
-    formatMessage
+    formatMessage,
+    cancelOrder
 } = require('..');
 
-const { log } = require('../utils');
+const { log }   =   require('../utils');
 
-router.post('/command/menu', async function (req, res, next) {
+router.post('/command/order', async function (req, res, next) {
     try {
         const cafe = req.body.text? req.body.text : 'all';
         const slackReqObj = req.body;
@@ -34,16 +35,23 @@ router.post('/actions', async (req, res) => {
                 response = await confirmOrder(slackReqObj);
                 break;
             case 'order_selected':
-                const chosenOption = slackReqObj.actions[0].value;
-                if(chosenOption == 'cash'){
+                const chosenOption = JSON.parse(slackReqObj.actions[0].value);
+                const action = chosenOption.action;
+                const order = chosenOption._doc;
+
+                if (action == 'cash') {
                     response = formatMessage('Alright. Your order will be validated as soon as you give your cash to Irene.');
-                }else if(chosenOption == 'other'){
+                }else if (action == 'other') {
                     //TO-DO Check slack dialogs to get number.
                     //console.log(await getNumber(slackReqObj));
                     response = formatMessage("Consider updating your number on your slack profile to speed up the checkout process.");
-                }else if(chosenOption == 'checkout'){
-                    await processOrder(slackReqObj);
-                    response = formatMessage("Order validated. You will be notified as soon as your food arrives.");
+                }else if (action == 'checkout') {
+                    const phone = chosenOption.phone;
+                    startCheckout(order, phone);
+                    response = formatMessage("Awesome. Accept the checkout prompt that you will receive on your mobile to validate your order.");
+                }else if (action == 'cancel') {
+                    cancelOrder(order._id);
+                    response = formatMessage("Your order has been canceled.");
                 }
                 break;
         }

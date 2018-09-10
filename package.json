@@ -10,6 +10,7 @@
     "test-windows": "cross-env NODE_ENV=test nyc node_modules/mocha/bin/_mocha --recursive --exit ./test/"
   },
   "dependencies": {
+    "africastalking": "^0.3.2",
     "axios": "^0.18.0",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",

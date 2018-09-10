@@ -1,8 +1,11 @@
-const { log }   =   require('./utils');
-const axios     =   require('axios');
 require('dotenv').load();
 
-const {
+const { log }   =   require('./utils');
+const axios     =   require('axios');
+const pay       =   require('./utils/payment');
+const sms       =   require('./utils/sms');
+
+const       {
     getAll,
     getById,
     create,
@@ -11,46 +14,50 @@ const {
     search
 } = require('./utils/models');
 
-async function getMenu(options=null) {
-    const filter = options? await search('vendor', 'name', options).then( (_vendor) => {
-        return {vendor : _vendor._id};
-    }): options;
-
-    return await getAll('item', filter).then( result => {
-        return result;
-    });
-}
-
-async function showMenu(options) {
-    
-    //Add text and value fields for each menu item
-    const fixMenu = (items) => {
-        let _menu = [];
-        items.forEach( item => {
-            _menu.push({
-                name: item.name,
-                text: item.name + ': KES'+ item.price,
-                value: item._id
+const getMenu   =   async (name=null) => {
+    let filter  =   {};
+    if (name) {
+        await search('vendor', 'name', name)
+            .then(vendor => {
+                filter = {vendor : vendor.name};
+            })
+            .catch(err => {
+                log.error(err);
             });
-        });
-        return _menu;
-    };
+    }
+    return await getAll('item', filter);
+};
 
-    
+const formatMenu = async (items = []) => {
+    let menu = items.map(item => {
+        return {
+            name: item.name,
+            text: item.name + ': KES'+ item.price,
+            value: JSON.stringify(item)
+        };
+    });
+    return menu;
+};
+
+const showMenu = async (options) => {
     try {
-        let response, menu, _text;
-        const { cafe, slackReqObj } = options;
+        let response, menu, title;
+        const {
+            cafe,
+            slackReqObj
+        } = options;
 
         if (cafe === 'all') {
-            menu = await getMenu().then(fixMenu);
-            _text = 'All menus'; 
+            menu = await getMenu();
+            title = 'All menus';
         } else {
-            menu = await getMenu(cafe).then(fixMenu);
-            _text = `${cafe}'s menu.`;
+            menu = await getMenu(cafe);
+            title = `${cafe}'s menu.`;
         }
-        
+        menu = await formatMenu(menu);
+
         response = {
-            text: _text,
+            text: title,
             attachments: [{
                 text: 'Select item',
                 fallback: 'Select item',
@@ -72,40 +79,41 @@ async function showMenu(options) {
     } catch (err) {
         throw err;
     }
-}
+};
 
-async function getSlackUser(userId){
-    return await axios.get(
-        'https://slack.com/api/users.profile.get',
+const getSlackUser = async (userId) => {
+    const user = await axios.get(
+        process.env.SLACK_URI + 'users.profile.get',
         {
             params: {
                 token: process.env.SLACK_TOKEN,
                 user: userId
             }
-        }
-    ).then(function(user){
-        return user.data.profile;
-    }).catch(function(err){
-        throw err;
-    });
-}
+        })
+        .then(user => {
+            return user.data.profile;
+        })
+        .catch(err => {
+            log.error(err);
+        });
+    return user;
+};
 
-async function confirmOrder(slackReqObj){
-    const itemObj = slackReqObj.actions[0].selected_options[0];
-    const item = await getById('item', itemObj.value);
-    const vendor = await getById('vendor', item.vendor);
+const confirmOrder = async (slackReqObj) => {
+    const itemString = slackReqObj.actions[0].selected_options[0].value;
+    const item = JSON.parse(itemString);
 
     const user = await getSlackUser(slackReqObj.user.id);
 
     try{
-        create('order', {
-            person: {
-                name: user.real_name
-            },
-            item: item._id,
-            vendor: vendor._id,
-            amount: item.price
-        });
+        const order = await create('order', {
+                person: {
+                    name: user.real_name
+                },
+                item    : item.name,
+                vendor  : item.vendor,
+                amount  : item.price
+            });
 
         let response = {
             text: 'Order received!',
@@ -137,19 +145,25 @@ async function confirmOrder(slackReqObj){
                     name: 'yes',
                     text: 'Sure',
                     type: 'button',
-                    value: 'checkout'
+                    value: JSON.stringify({...order, ...{action: 'checkout', phone: user.phone}})
                 },
                 {
                     name: 'other',
                     text: 'No, I\'ll use a different number',
                     type: 'button',
-                    value: 'other'
+                    value: JSON.stringify({...order, ...{action: 'other'}})
                 },
                 {
                     name: 'no',
                     text: 'Nah, I\'ll pay using cash',
                     type: 'button',
-                    value: 'cash'
+                    value: JSON.stringify({...order, ...{action: 'cash'}})
+                },
+                {
+                    name: 'cancel',
+                    text: 'Cancel this order',
+                    type: 'button',
+                    value: JSON.stringify({...order, ...{action: 'cancel'}})
                 }]
             });
         }else{
@@ -163,13 +177,19 @@ async function confirmOrder(slackReqObj){
                     name: 'other',
                     text: 'Via Mpesa',
                     type: 'button',
-                    value: 'other'
+                    value: JSON.stringify({...order, ...{action: 'other'}})
                 },
                 {
                     name: 'no',
                     text: 'Nah, I\'ll pay using cash',
                     type: 'button',
-                    value: 'cash'
+                    value: JSON.stringify({...order, ...{action: 'cash'}})
+                },
+                {
+                    name: 'cancel',
+                    text: 'Cancel this order',
+                    type: 'button',
+                    value: JSON.stringify({...order, ...{action: 'cancel'}})
                 }]
             });
         }
@@ -177,30 +197,39 @@ async function confirmOrder(slackReqObj){
     }catch(err){
         throw err;
     }
-}
+};
 
-async function processOrder(slackReqObj, phone = null){
-    const user = await getSlackUser(slackReqObj.user.id);
-    const totalCost = await getAll('order', {
-        person: {
-            name: user.real_name
-        },
-        paid: false
-    }).then(function(orders){
-        let price = 0;
-        orders.forEach(function(order){
-            price += order.amount;
-        });
-        return price;
-    }).catch(function(err){
-        console.log(err);
+const startCheckout = async (order, phone) => {
+    const vendor = order.vendor;
+    const amount = order.amount;
+    pay(vendor, phone, amount, order);
+};
+
+const validateOrder = async orderId => {
+    return update('order', orderId, updates = {
+        paid: true
+    })
+    .then( () => {
+        return 'Successfully updated.'
+    })
+    .catch( err => {
+        log.error(err);
+        return 'Update failed.'
     });
+};
 
-    //To-do: Intitiate payment using this checkout.
-    //paymentOptions.phoneNumber = phone | user.phone;
-}
+const cancelOrder = async (orderId) => {
+    return delete_('order', orderId)
+    .then(success => {
+        return 'Order canceled.'
+    })
+    .catch( err => {
+        log.error(err);
+        return 'Order cancelling failed.'
+    });
+};
 
-function formatMessage(message){
+const formatMessage = message => {
     return {
         attachments: [
             {
@@ -210,12 +239,12 @@ function formatMessage(message){
             }
         ]
     };
-}
+};
 
 //To-do: Fix dialog to prompt user to enter number or slack.
 async function getNumber(slackReqObj){
     return await axios.post(
-        'https://slack.com/api/dialog.open',
+        process.env.SLACK_URI + 'dialog.open',
         {
             trigger_id: slackReqObj.trigger_id,
             dialog: JSON.stringify({
@@ -245,4 +274,5 @@ async function getNumber(slackReqObj){
         throw err;
     });
 }
-module.exports = { showMenu, confirmOrder, processOrder, getNumber, formatMessage};
+
+module.exports = { showMenu, confirmOrder, startCheckout, getNumber, formatMessage, validateOrder, cancelOrder };

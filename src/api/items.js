@@ -1,6 +1,6 @@
-const express = require('express');
-const router = express.Router();
-const validate = require('validate.js')
+const express       =   require('express');
+const router        =   express.Router();
+const validate      =   require('validate.js')
 
 const {
     getAll,
@@ -94,7 +94,7 @@ const _validateParams = (params) => {
         makeErrorMessage(error)
     }
     return validationError;
-}
+};
 
 router.get('/', (req, res) => {
     getAll('item')
