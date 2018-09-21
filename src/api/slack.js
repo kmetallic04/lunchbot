@@ -2,10 +2,10 @@ const express   =   require('express');
 const router    =   express.Router();
 
 const {
-    startOrder,
     showMenu,
     confirmOrder,
     startCheckout,
+    getNumber,
     formatMessage,
     cancelOrder
 } = require('..');
@@ -14,15 +14,10 @@ const { log }   =   require('../utils');
 
 router.post('/command/order', async function (req, res, next) {
     try {
-        let response, slackReqObj;
-        switch(req.body.text){
-            case 'menu':
-                response = await showMenu();
-                break;
-            default:
-                const cafe = req.body.text? req.body.text : 'all';
-                response = await startOrder(cafe);
-        }
+        const cafe = req.body.text? req.body.text : 'all';
+        const slackReqObj = req.body;
+
+        const response = await showMenu({ cafe, slackReqObj });
         return res.json(response);
     } catch (err) {
         log.error(err);
@@ -35,30 +30,30 @@ router.post('/actions', async (req, res) => {
         const slackReqObj = JSON.parse(req.body.payload);
         let response;
 
-        if (slackReqObj.callback_id === 'pick_item') {
-            response = await confirmOrder(slackReqObj);
-        } else if (slackReqObj.callback_id == 'confirm_order') {
-            const chosenOption = JSON.parse(slackReqObj.actions[0].value);
-            console.log(chosenOption);
-            const order = chosenOption.order;
+        switch (slackReqObj.callback_id) {
+            case 'pick_lunch_items':
+                response = await confirmOrder(slackReqObj);
+                break;
+            case 'order_selected':
+                const chosenOption = JSON.parse(slackReqObj.actions[0].value);
+                const action = chosenOption.action;
+                const order = chosenOption._doc;
 
-            switch (chosenOption.action) {
-                case 'cash':
+                if (action == 'cash') {
                     response = formatMessage('Alright. Your order will be validated as soon as you give your cash to Irene.');
-                    break;
-                case 'other':
+                }else if (action == 'other') {
+                    //TO-DO Check slack dialogs to get number.
+                    //console.log(await getNumber(slackReqObj));
                     response = formatMessage("Consider updating your number on your slack profile to speed up the checkout process.");
-                    break;
-                case 'cancel':
-                    cancelOrder(order._id);
-                    response = formatMessage("This order has been canceled.");
-                    break;
-                case 'checkout':
+                }else if (action == 'checkout') {
                     const phone = chosenOption.phone;
                     startCheckout(order, phone);
                     response = formatMessage("Awesome. Accept the checkout prompt that you will receive on your mobile to validate your order.");
-                    break;
-            }
+                }else if (action == 'cancel') {
+                    cancelOrder(order._id);
+                    response = formatMessage("Your order has been canceled.");
+                }
+                break;
         }
         return res.json(response);
     } catch (err) {
