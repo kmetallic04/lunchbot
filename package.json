@@ -12,6 +12,7 @@
   "dependencies": {
     "africastalking": "^0.3.2",
     "axios": "^0.18.0",
+    "chai-http": "^4.2.0",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "dotenv": "^6.0.0",
