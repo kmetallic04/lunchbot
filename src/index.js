@@ -20,9 +20,6 @@ const getMenu   =   async (name=null) => {
         await search('vendor', 'name', name)
             .then(vendor => {
                 filter = {vendor : vendor.name};
-            })
-            .catch(err => {
-                log.error(err);
             });
     }
     return await getAll('item', filter);
@@ -39,13 +36,9 @@ const formatMenu = async (items = []) => {
     return menu;
 };
 
-const showMenu = async (options) => {
+const startOrder = async cafe => {
     try {
         let response, menu, title;
-        const {
-            cafe,
-            slackReqObj
-        } = options;
 
         if (cafe === 'all') {
             menu = await getMenu();
@@ -65,9 +58,9 @@ const showMenu = async (options) => {
                 mrkdwn: true,
                 mrkdwn_in: ['text'],
                 attachment_type: 'default',
-                callback_id: 'pick_lunch_items',
+                callback_id: 'pick_item',
                 actions: [{
-                    name: 'pick_lunch_items',
+                    name: 'pick_item',
                     title: 'Pick an item',
                     text: 'Order',
                     type: 'select',
@@ -77,7 +70,54 @@ const showMenu = async (options) => {
         };
         return response;
     } catch (err) {
-        throw err;
+        log.error(err);
+        return formatMessage("Sorry, I couldn't find that vendor. Could you try searching for a different vendor?");
+    }
+};
+
+const showMenu = async () => {
+    try {
+        const vendors = await getAll('vendor');
+        const items = await getAll('item');
+
+        let response = {
+            text: 'Available food items',
+            attachments: []
+        };
+
+        //  Organise the menu by vendor
+        vendors.map( vendor => {
+            let fields = [
+                {
+                    title: 'Item',
+                    short: true
+                },
+                {
+                    title:  'Price',
+                    short:  true
+                }
+            ];
+
+            items.map( item => {
+                if (item.vendor === vendor.name) {
+                    fields.push(
+                        {value: item.name, short: true},
+                        {value: item.price, short: true}
+                    );
+                }
+            });
+
+            response.attachments.push({
+                title:  (vendor.name + "'s menu.").toUpperCase(),
+                color:  '#2c963f',
+                fields: fields
+            });
+        });
+
+        return response;
+    } catch (err) {
+        log.error(err);
+        return formatMessage("I'm sorry, we encountered an error, could you try using this command again?");
     }
 };
 
@@ -140,30 +180,43 @@ const confirmOrder = async (slackReqObj) => {
                 short: false,
                 color: '#2c963f',
                 attachment_type: 'default',
-                callback_id: 'order_selected',
+                callback_id: 'confirm_order',
                 actions: [{
                     name: 'yes',
                     text: 'Sure',
                     type: 'button',
-                    value: JSON.stringify({...order, ...{action: 'checkout', phone: user.phone}})
+                    value: JSON.stringify({
+                        order: order,
+                        action: 'checkout',
+                        phone: user.phone
+                    })
                 },
                 {
                     name: 'other',
                     text: 'No, I\'ll use a different number',
                     type: 'button',
-                    value: JSON.stringify({...order, ...{action: 'other'}})
+                    value: JSON.stringify({
+                        order: order,
+                        action: 'other'
+                    })
                 },
                 {
                     name: 'no',
                     text: 'Nah, I\'ll pay using cash',
                     type: 'button',
-                    value: JSON.stringify({...order, ...{action: 'cash'}})
+                    value: JSON.stringify({
+                        order: order, 
+                        action: 'cash'
+                    })
                 },
                 {
                     name: 'cancel',
                     text: 'Cancel this order',
                     type: 'button',
-                    value: JSON.stringify({...order, ...{action: 'cancel'}})
+                    value: JSON.stringify({
+                        order: order,
+                        action: 'cancel'
+                    })
                 }]
             });
         }else{
@@ -177,25 +230,35 @@ const confirmOrder = async (slackReqObj) => {
                     name: 'other',
                     text: 'Via Mpesa',
                     type: 'button',
-                    value: JSON.stringify({...order, ...{action: 'other'}})
+                    value: JSON.stringify({
+                        order: order,
+                        action: 'other'
+                    })
                 },
                 {
                     name: 'no',
                     text: 'Nah, I\'ll pay using cash',
                     type: 'button',
-                    value: JSON.stringify({...order, ...{action: 'cash'}})
+                    value: JSON.stringify({
+                        order: order,
+                        action: 'cash'
+                    })
                 },
                 {
                     name: 'cancel',
                     text: 'Cancel this order',
                     type: 'button',
-                    value: JSON.stringify({...order, ...{action: 'cancel'}})
+                    value: JSON.stringify({
+                        order: order,
+                        action: 'cancel'
+                    })
                 }]
             });
         }
         return response;
     }catch(err){
-        throw err;
+        log.error(err);
+        return formatMessage("I'm sorry, we encountered an error, could you try using this command again?");
     }
 };
 
@@ -241,38 +304,4 @@ const formatMessage = message => {
     };
 };
 
-//To-do: Fix dialog to prompt user to enter number or slack.
-async function getNumber(slackReqObj){
-    return await axios.post(
-        process.env.SLACK_URI + 'dialog.open',
-        {
-            trigger_id: slackReqObj.trigger_id,
-            dialog: JSON.stringify({
-                callback_id: "order_lunch",
-                title: "Enter your phone number",
-                submit_label: "Request",
-                notify_on_cancel: true,
-                elements: [
-                {
-                    type: "text",
-                    label: "Mobile No.",
-                    name: "phone",
-                    subtype: 'tel'
-                }]
-            })
-        },
-        {
-            headers: {
-                Authorization: {
-                    bearer: process.env.SLACK_TOKEN
-                }
-            }
-        }
-    ).then(function(result){
-        return result;
-    }).catch(function(err){
-        throw err;
-    });
-}
-
-module.exports = { showMenu, confirmOrder, startCheckout, getNumber, formatMessage, validateOrder, cancelOrder };
+module.exports = { startOrder, showMenu, confirmOrder, startCheckout, formatMessage, validateOrder, cancelOrder };
