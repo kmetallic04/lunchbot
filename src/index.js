@@ -205,7 +205,7 @@ const confirmOrder = async (slackReqObj) => {
                     text: 'Nah, I\'ll pay using cash',
                     type: 'button',
                     value: JSON.stringify({
-                        order: order, 
+                        order: order,
                         action: 'cash'
                     })
                 },

@@ -25,7 +25,7 @@ describe('Order', function () {
         });
 
         it('must have a vendor', done => {
-            options['item'] = {};
+            options['item'] = 'Rice';
             let order = new Order(options);
             order.validate(e => {
                 expect(e.errors.vendor).to.exist;
@@ -35,7 +35,7 @@ describe('Order', function () {
         });
 
         it('must have an amount', done => {
-            options['vendor'] = {};
+            options['vendor'] = 'Bobs';
             let order = new Order(options);
             order.validate(e => {
                 expect(e.errors.amount).to.exist;
