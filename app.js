@@ -8,6 +8,7 @@ var slackRoutes = require('./src/api/slack');
 var vendorRoutes = require('./src/api/vendors');
 var orderRoutes = require('./src/api/orders');
 var itemRoutes = require('./src/api/items');
+var printRoute = require('./src/api/print');
 
 var app = express();
 
@@ -21,6 +22,7 @@ app.use('/slack', slackRoutes);
 app.use('/vendors', vendorRoutes);
 app.use('/orders', orderRoutes);
 app.use('/items', itemRoutes);
+app.use('/print', printRoute);
 
 // 404
 app.use((req, res) => {

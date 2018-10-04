@@ -16,7 +16,7 @@ function connectDB(database) {
             console.log(database + ' connection successful');
         })
         .catch(function (error) {
-            console.error.bind(console, database + ' connection unsuccessful, retrying in 5 seconds : ')
+            console.error( database + ' connection unsuccessful, retrying in 5 seconds : ')
         });
     mongoose.Promise = global.Promise;
 

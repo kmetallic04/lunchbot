@@ -1,0 +1,28 @@
+<div>
+    <div id="heading">
+        <h2>{{title}}</h2>
+    </div>
+    <div id="data">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Item</th>
+                    <th>Vendor</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each orders as |order|}}
+                <tr>
+                    <td>{{order.name}}</td>
+                    <td>{{order.item}}</td>
+                    <td>{{order.vendor}}</td>
+                    <td>{{order.amount}}</td>
+                    <td>{{order.status}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

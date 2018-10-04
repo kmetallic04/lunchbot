@@ -1,10 +1,25 @@
-version: '2.1'
+version: '2'
 
 services:
-	lunchbot:
-		image: lunchbot
-		build: .
-		environment:
-			NODE_ENV: production
-		ports:
-			- 3000:3000
+  lunchbot:
+    container_name: lunchbot-dev
+    image: lunchbot-dev
+    restart: always
+    build: .
+    environment:
+      NODE_ENV: development
+      DEBUG: lunchbot:server
+    ports:
+      - 3000:3000
+    depends_on:
+      - mongo
+    links:
+      - mongo
+    # command: "npm start"
+  mongo:
+    container_name: mongo
+    image: mongo
+    volumes:
+      - ./data/db:/data/db
+    ports:
+      - 27017:27017

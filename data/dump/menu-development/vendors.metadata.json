@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":2,"key":{"_id":1},"name":"_id_","ns":"menu-development.vendors"},{"v":2,"unique":true,"key":{"name":1},"name":"name_1","ns":"menu-development.vendors","background":true}],"uuid":"6d6f1213ea874c3db946ec1f79c716af"}

@@ -17,7 +17,7 @@ class Dashboard extends React.Component {
                     value: 'all'
                 },
                 {
-                    type: 'status',
+                    type: 'paid',
                     value: 'all'
                 }
             ],
@@ -70,6 +70,19 @@ class Dashboard extends React.Component {
             }
         });
         return filteredData;
+    }
+
+    printOrders() {
+        const { filters } = this.state;
+        const url = `/print/vendor=${filters[0].value}&paid=${filters[1].value}`;
+    
+        fetch(url)
+            .then(file => {
+                // do sth with file
+            })
+            .catch(err => {
+                console.log(err);
+            })
     }
 
     handleFilter(e) {
@@ -129,6 +142,9 @@ class Dashboard extends React.Component {
                 this.setState({
                     manage: false
                 });
+                break;
+            case 'print':
+                this.printOrders();
                 break;
             default:
                 break;
