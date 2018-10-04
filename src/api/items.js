@@ -39,9 +39,8 @@ const _validateParams = (params) => {
         category: function (value) {
             const categories = [
                 "Drinks",
-                "Meat Dishes",
-                "Vegetable Dishes",
-                "Specials",
+                "Starch",
+                "Stew",
                 "Others"
             ];
             if (validate.isEmpty(value)) {
