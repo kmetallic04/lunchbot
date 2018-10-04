@@ -3,27 +3,29 @@ const router            =   express.Router();
 
 const { log }           =   require('../utils');
 const sendSMS           =   require('../utils/sms');
-const { validateOrder } =   require('../index');
+const { validateOrder } =   require('../utils/logic');
+const { postRequest }   =   require('../utils/slack');
 
 router.post('/lipa', async function (req, res) { 
     try{
+        const responseUrl = req.body.requestMetadata.response_url;
+        let message;
+        
         if(req.body['status'] == 'Success'){
-            phone   =   req.body['source'];
-            value   =   req.body['value'];
-            vendor  =   req.body['productName'];
+            const phone         =   req.body['source'];
+            const value         =   req.body['value'];
+            const vendor        =   req.body['productName'];
+            const item          =   req.body.requestMetadata.item;
+            const orderId       =   req.body.requestMetadata.orderId;
+            message       =   { text: `We have received your payment of ${value} to ${vendor} for ${item}. Your order has been validated.`};
 
-            console.log(req.body);
-
-            item    =   req.body.requestMetadata.item;
-            orderId =   req.body.requestMetadata.orderId;
-
-            message =   `We have received your payment of ${value} to ${vendor} for ${item}`;
-
-            validateOrder(orderId);
+            validateOrder(orderId, 'Mpesa');
             sendSMS({phone, message});
         }else{
-            console.log(req.body);
+            message = {text: 'We were unable to initiate the mobile checkout. Try ordering again.'};
         }
+
+        postRequest(responseUrl, message);
         res.status(200).send('OK');
     }catch(err){
         log.error(err);
