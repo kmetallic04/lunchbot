@@ -20,7 +20,7 @@ let order = {
 describe('Orders', () => {
     beforeEach( (done) => {
         //Remove all orders before any test.
-        Orders.remove({});
+        Orders.remove({}, (err, result) => { });
         done();
     });
 

@@ -20,7 +20,7 @@ let item = {
 describe('Items', () => {
     beforeEach( (done) => {
         //Remove all items before any test.
-        Item.remove({});
+        Item.remove({}, (err, result) => { });
         done();
     });
 
