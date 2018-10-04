@@ -2,7 +2,7 @@ const Vendor = require('../models/vendors');
 const Item   = require('../models/items');
 const Order  = require('../models/orders');
 
-const { log } = require('..');
+const { log } = require('.');
 
 const pickModel = (modelTag)=> {
     let model;

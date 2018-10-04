@@ -37,9 +37,12 @@ const orderSchema   = new mongoose.Schema({
         type    : Date,
         default : Date.now
     },
-    paid: {
-        type    : Boolean,
-        default : false
+    status: {
+        type    : Object,
+        default : {
+            paid: false,
+            means: null
+        }
     }
 });
 

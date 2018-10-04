@@ -3,7 +3,7 @@ const { selectDb }  = require('../utils');
 const db            = selectDb();
 
 //Menu items Schema
-const categories    = ["Drinks", "Meat Dishes", "Vegetable Dishes", "Specials", "Others"];
+const categories    = ["Drinks", "Starch", "Stew", "Others"];
 
 const itemSchema    = new mongoose.Schema({
     name: {
