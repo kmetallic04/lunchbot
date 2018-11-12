@@ -1,6 +1,5 @@
 require('dotenv').load();
 
-const { log }           =   require('.');
 const africastalking    =   require('africastalking');
 
 const gatewayOptions    =   {
