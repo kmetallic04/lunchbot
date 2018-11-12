@@ -1,33 +1,22 @@
-const express = require('express');
-const router = express.Router();
+const express   =   require('express');
+const router    =   express.Router();
 
 const {
-    showMenu,
+    selectVendor,
     startOrder,
-    makeOrder
-} = require('..');
+    confirmOrder,
+    checkout,
+    formatMessage,
+    enterNumber
+} = require('../utils/logic');
 
-const { log } = require('../utils');
+const { create } = require('../utils/models');
 
-router.post('/command/menu', function (req, res, next) {
+const { log }   =   require('../utils');
+
+router.post('/command/order', async function (req, res, next) {
     try {
-        const cafe = req.body.text? req.body.text : 'all';
-        const slackReqObj = req.body;
-
-        const response = showMenu({ cafe, slackReqObj });
-        return res.json(response);
-    } catch (err) {
-        log.error(err);
-        return res.status(500).send('Something blew up. We\'re looking into it.');
-    }
-});
-
-router.post('/command/order', function (req, res, next) {
-    try {
-        const cafe = req.body.text? req.body.text : undefined;
-        const slackReqObj = req.body;
-
-        const response = startOrder({ cafe, slackReqObj });
+        let response = await selectVendor(req.body);
         return res.json(response);
     } catch (err) {
         log.error(err);
@@ -37,20 +26,36 @@ router.post('/command/order', function (req, res, next) {
 
 router.post('/actions', async (req, res) => {
     try {
-        const slackReqObj = JSON.parse(req.body.payload);
         let response;
+        const slackReqObj = JSON.parse(req.body.payload);
 
-        switch (slackReqObj.callback_id) {
-            case 'select_cafe':
-                const cafe = slackReqObj.actions[0].value;
-                response = startOrder({ cafe, slackReqObj });
-                break;
-            case 'order_lunch':
-                response = makeOrder({ slackReqObj });
-                break;
+        if (slackReqObj.callback_id === 'pick_items') {
+            confirmOrder(slackReqObj);
+        }else if (slackReqObj.callback_id === 'select_vendor') {
+            startOrder(slackReqObj);
+        } else if (slackReqObj.callback_id === 'confirm_order') {
+            const chosenOption = JSON.parse(slackReqObj.actions[0].value);
+            const order = chosenOption.order;
+              
+            switch (chosenOption.action) {
+                case 'cash':
+                    create('order', order);
+                    response = formatMessage('Alright. Your order will be validated as soon as you give your cash to Irene.');
+                    return res.json(response);
+                case 'other':
+                    enterNumber(slackReqObj, order);
+                    break;
+                case 'checkout':
+                    checkout(order, chosenOption.phone, slackReqObj.response_url);
+                    break;
+            }
+        } else if (slackReqObj.callback_id === 'enter_number') {
+            const order = JSON.parse(slackReqObj.state);
+            const phone = slackReqObj.submission.phone;
+            checkout(order, phone, slackReqObj.response_url);
         }
 
-        return res.json(response);
+        return res.status(200).send();
     } catch (err) {
         log.error(err);
         return res.status(500).send('Something blew up. We\'re looking into it.');

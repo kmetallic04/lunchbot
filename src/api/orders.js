@@ -1,6 +1,6 @@
-const express = require('express');
-const router = express.Router();
-const validate = require('validate.js')
+const express   =   require('express');
+const router    =   express.Router();
+const validate  =   require('validate.js')
 
 const {
     getAll,
@@ -61,10 +61,10 @@ const _validateParams = (params) => {
             }
             return null;
         },
-        paid: function (value) {
-            if (!validate.isBoolean(value)) {
+        status: function (value) {
+            if (!validate.isObject(value)) {
                 return {
-                    format: 'must be a boolean'
+                    format: 'must be an object'
                 }
             }
         }

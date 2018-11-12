@@ -2,7 +2,7 @@ const Vendor = require('../models/vendors');
 const Item   = require('../models/items');
 const Order  = require('../models/orders');
 
-const { log } = require('..');
+const { log } = require('.');
 
 const pickModel = (modelTag)=> {
     let model;
@@ -22,9 +22,9 @@ const pickModel = (modelTag)=> {
     return model;
 }
 
-const getAll = async (modelTag) => {
+const getAll = async (modelTag, filter = {}) => {
     const Model = pickModel(modelTag);
-    const data = await Model.find({}, null);
+    const data = await Model.find(filter);
     return data;
 }
 
@@ -81,5 +81,6 @@ module.exports = {
     search,
     create,
     update,
-    delete_
+    delete_,
+    search
 }

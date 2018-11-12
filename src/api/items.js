@@ -1,6 +1,6 @@
-const express = require('express');
-const router = express.Router();
-const validate = require('validate.js')
+const express       =   require('express');
+const router        =   express.Router();
+const validate      =   require('validate.js')
 
 const {
     getAll,
@@ -39,9 +39,8 @@ const _validateParams = (params) => {
         category: function (value) {
             const categories = [
                 "Drinks",
-                "Meat Dishes",
-                "Vegetable Dishes",
-                "Specials",
+                "Starch",
+                "Stew",
                 "Others"
             ];
             if (validate.isEmpty(value)) {
@@ -94,7 +93,7 @@ const _validateParams = (params) => {
         makeErrorMessage(error)
     }
     return validationError;
-}
+};
 
 router.get('/', (req, res) => {
     getAll('item')
