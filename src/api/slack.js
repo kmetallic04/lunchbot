@@ -2,12 +2,17 @@ const express = require('express');
 const router = express.Router();
 
 const {
+    postResponse,
+    getVendors,
     showMenu,
     startOrder,
-    makeOrder
+    makeOrder,
+    showOrder,
+    toTitleCase
 } = require('..');
 
 const { log } = require('../utils');
+var slackSession = {};
 
 router.post('/command/menu', function (req, res, next) {
     try {
@@ -22,12 +27,22 @@ router.post('/command/menu', function (req, res, next) {
     }
 });
 
+router.post('/command/vendors', function (req, res, next) {
+    try {
+        const response = getVendors();
+        return res.json(response);
+    } catch(err) {
+        log.error(err);
+        return res.status(500).send('Something blew up. We\'re looking into it');
+    }
+});
+
 router.post('/command/order', function (req, res, next) {
     try {
         const cafe = req.body.text? req.body.text : undefined;
         const slackReqObj = req.body;
 
-        const response = startOrder({ cafe, slackReqObj });
+        const response = startOrder();
         return res.json(response);
     } catch (err) {
         log.error(err);
@@ -38,19 +53,32 @@ router.post('/command/order', function (req, res, next) {
 router.post('/actions', async (req, res) => {
     try {
         const slackReqObj = JSON.parse(req.body.payload);
+        let userId = slackReqObj.user.id;
+        if (!slackSession.userId){
+            slackSession.userId = {};
+            slackSession.userId.username = slackReqObj.user.username.split('.').map(toTitleCase).join(' ');
+        }
         let response;
 
-        switch (slackReqObj.callback_id) {
-            case 'select_cafe':
-                const cafe = slackReqObj.actions[0].value;
-                response = startOrder({ cafe, slackReqObj });
+        switch (slackReqObj.actions[0].action_id) {
+            case 'pick_cafe':
+                let cafe = slackReqObj.actions[0].selected_option.value;
+                slackSession.userId.response_url = slackReqObj.response_url;
+                response = showMenu(cafe);
                 break;
-            case 'order_lunch':
-                response = makeOrder({ slackReqObj });
+            case 'make_order':
+                slackSession.userId.response_url = slackReqObj.response_url;
+                console.log(slackReqObj.actions[0].value);
+                let order = JSON.parse(slackReqObj.actions[0].value);
+                slackSession.userId.dish = order.dish;
+                slackSession.userId.price = order.price;
+                slackSession.userId.cafe = order.cafe;
+                response = makeOrder(slackSession.userId);
                 break;
+            case 'confirm_order':
+                response = showOrder(slackSession.userId);
         }
-
-        return res.json(response);
+        return postResponse(slackSession.userId.response_url, response);
     } catch (err) {
         log.error(err);
         return res.status(500).send('Something blew up. We\'re looking into it.');

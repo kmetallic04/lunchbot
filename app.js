@@ -1,15 +1,17 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const session = require('express-session');
+const uuid = require('uuid/v4');
 
-var slackRoutes = require('./src/api/slack');
-var vendorRoutes = require('./src/api/vendors');
-var orderRoutes = require('./src/api/orders');
-var itemRoutes = require('./src/api/items');
+const slackRoutes = require('./src/api/slack');
+const vendorRoutes = require('./src/api/vendors');
+const orderRoutes = require('./src/api/orders');
+const itemRoutes = require('./src/api/items');
 
-var app = express();
+const app = express();
 
 app.use(logger('dev'));
 app.use(express.json());
