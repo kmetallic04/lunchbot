@@ -36,29 +36,6 @@ const _validateParams = (params) => {
             }
             return null;
         },
-        category: function (value) {
-            const categories = [
-                "Drinks",
-                "Meat Dishes",
-                "Vegetable Dishes",
-                "Specials",
-                "Others"
-            ];
-            if (validate.isEmpty(value)) {
-                return {
-                    presence: {
-                        message: 'is required'
-                    }
-                };
-            }
-            return {
-                inclusion: {
-                    within: categories,
-                    message: 'doesn\'t exist'
-                }
-            }
-            return null;
-        },
         price: function (value) {
             if (validate.isEmpty(value)) {
                 return {

@@ -3,8 +3,6 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const session = require('express-session');
-const uuid = require('uuid/v4');
 
 const slackRoutes = require('./src/api/slack');
 const vendorRoutes = require('./src/api/vendors');

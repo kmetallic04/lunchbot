@@ -16,7 +16,7 @@ const selectDb = () => {
             db = dbSetup('menu-test');
             break;
         case 'development':
-            db = dbSetup('menu-development');
+            db = dbSetup('menu');
             break;
         default:
             db = dbSetup('menu');

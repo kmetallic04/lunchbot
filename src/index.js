@@ -1,6 +1,10 @@
 const { log } = require('./utils');
 const https = require('https');
 
+const Vendor = require('./models/vendors');
+const Item   = require('./models/items');
+const Order  = require('./models/orders');
+
 // TODO: set up db
 function postResponse(url, postData) {
     try {
@@ -31,29 +35,8 @@ function getMenu(options) {
     // TODO: return specific menu from db
 }
 
-function getVendors() {
-    const vendors = [
-        {
-            name: "All Cafes",
-            phone: '0123456789'
-        },
-        {
-            name: "Cafe Calana",
-            phone: '0705983479',
-        },
-        {
-            name: "Fogo Gaucho Restaurant",
-            phone: '0705986779',
-        },
-        {
-            name: "B-Club Restaurant",
-            phone: '0707983189',
-        },
-        {
-            name: "Mama Safi Dishes",
-            phone: '0725363276',
-        },
-    ];
+async function getVendors() {
+    const vendors = await Vendor.find({});
 
     function formatVendors(vendors) {
         let options = new Array();
@@ -73,48 +56,15 @@ function getVendors() {
     return formatVendors(vendors);
 }
 
-function showMenu({options}) {
-
-    // placeholder
-    const menu = [
+async function showMenu(cafe) {
+    const query = (cafe === 'All Cafes'? {}: {'vendor.name': cafe});
+    const menu = await Item.aggregate([{$lookup:
         {
-            name: "Rice Beef",
-            vendor: "Cafe Calana",
-            price: 200,
-        },
-        {
-            name: "Ugali Liver",
-            vendor: "Mama Safi Dishes",
-            price: 250,
-        },
-        {
-            name: "Chapati Beef",
-            vendor: "Mama Safi Dishes",
-            price: 200,
-        },
-        {
-            name: "Chips",
-            vendor: "Cafe Calana",
-            price: 150,
-        },
-        {
-            name: "Rice Chicken",
-            vendor: "Fogo Gaucho",
-            price: 300,
-        },
-        {
-            name: "Pilau Beef",
-            vendor: "Cafe Calana",
-            price: 250,
-        },
-        {
-            name: "Chips Masala",
-            vendor: "B-Club Restaurant",
-            price: 250,
-        }
-    ];
-
-    cafe = 'all';
+          from: Vendor.collection.name,
+          localField: 'vendor',
+          foreignField: '_id',
+          as: 'vendor'
+        }},{$match: query}]);
     
     function markDownMenu(menu) {
         let blocks = [
@@ -122,7 +72,17 @@ function showMenu({options}) {
                 type: 'section',
                 text: {
                   type: 'mrkdwn',
-                  text: `\n*OFFERS FROM ${cafe === 'all'? 'ALL CAFES': toUpperCase(cafe)}*`,
+                  text: `\nOffers from ${cafe}`,
+                },
+                accessory: {
+                    type: "button",
+                    text: {
+                        type: "plain_text",
+                        text: "Go Back",
+                        emoji: true,
+                    },
+                    value: 'click_me_123',
+                    action_id: 'start_order',
                 }
             },       
             {
@@ -136,16 +96,16 @@ function showMenu({options}) {
                     type: 'section',
                     text: {
                         type: 'mrkdwn',
-                        text: `Dish: *${item.name}*     _Price_: *${item.price}*`,
+                        text: `*${item.name}*\n_Price_: *${item.price}*`,
                     },
                     accessory: {
                         type: "button",
                         text: {
                             type: "plain_text",
-                            text: "Order",
+                            text: "Place Order",
                             emoji: true,
                         },
-                        value: `{"dish":"${item.name}", "price":${item.price}, "cafe":"${item.vendor}"}`,
+                        value: `{"dish":"${item.name}", "price":${item.price}, "cafe":"${item.vendor[0].name}", "item_id":"${item._id}", "vendor_id":"${item.vendor[0]._id}"}`,
                         action_id: 'make_order',
                     }
                 },       
@@ -154,7 +114,7 @@ function showMenu({options}) {
                     elements: [
                     {
                         type: 'plain_text',
-                        text: `From ${item.vendor}`,
+                        text: `${item.vendor[0].name}`,
                         emoji: true,
                     }
                     ]
@@ -165,7 +125,6 @@ function showMenu({options}) {
             ];
 
             blocks = [...blocks, ...block];
-
         });
 
         let formattedMenu = {
@@ -174,37 +133,7 @@ function showMenu({options}) {
         }
         return formattedMenu;
     };
-        
-
-    try {
-        let response, menuSelected;
-        if (cafe === 'all') {
-            menuSelected = menu;
-            response = markDownMenu(menuSelected);
-        } else {
-            const vendors = ['bobs', 'marions'];
-
-            if (!vendors.includes(cafe.toLowerCase())) {
-                const slackReqObjString = JSON.stringify(slackReqObj);
-                log.error(new Error(`Cafe ${cafe} selected is not among the current lunch delivery partners. slackReqObj: ${slackReqObjString}`));
-
-                const text = 'Hmmm, Currently, you can only order lunch from BOB or MARION\'s cafes.\n\nTry `/order bobs` or `/order marions` \n\nTo see the menus, try `/menu` or `/menu bobs` or `/menu marions`';
-                response = {
-                    text,
-                }
-            } else {
-                menuSelected = cafe.toLowerCase() === 'bobs' ? menu.bobsMenu : menu.marionsMenu; // get specific menu
-                response = {
-                    text: `${cafe} menu.`,
-                    mrkdwn: true,
-                    mrkdwn_in: ['text'],
-                }
-            }
-        }
-        return response;
-    } catch (err) {
-        throw err;
-    }
+    return markDownMenu(menu);
 }
 
 function startOrder() {
@@ -214,7 +143,7 @@ function startOrder() {
                 type: "section",
                 text: {
                     type: "mrkdwn",
-                    text: "Hi I'm lunch bot. You must be hungry. I'm here to help! :smile: Please pick your fav cafe from the dropdown list. I'll then magically give you the menu."
+                    text: "Hi I'm lunch bot. You must be hungry. I'm here to help! Pick your favourite cafe from the dropdown list. I'll then give you the relevant menu."
                 },
                 accessory: {
                     action_id: "pick_cafe",
@@ -240,21 +169,11 @@ function makeOrder (options) {
                 type: "section",
                 text: {
                     type: "mrkdwn",
-                    text: `Here's your order. Are you cool with it? Click Confirm. Already changed your mind? Feel free to run */lunch* again!\n
+                    text: `Here's your order. Are you cool with it? Click Confirm. Already changed your mind? Feel free to go back and choose another meal!\n
 Username: *${options.username}*
 Dish: *${options.dish}*
 Price: *${options.price}*`
                 },
-                accessory: {
-                    type: "button",
-                    text: {
-                        type: "plain_text",
-                        text: "Confirm Order",
-                        emoji: true
-                    },
-                    value: "click_me_123",
-                    action_id: "confirm_order",
-                }
             },
             {
                 type: "context",
@@ -264,7 +183,35 @@ Price: *${options.price}*`
                         text: `Order to be delivered by ${options.cafe}`
                     }
                 ]
-            }
+            },
+            {
+                type: "divider"
+            },
+            {
+                type: "actions",
+                elements: [
+                    {
+                        type: "button",
+                        text: {
+                            type: "plain_text",
+                            text: "Confirm Order",
+                            emoji: true
+                        },
+                        value: "click_me_123",
+                        action_id: "confirm_order"
+                    },
+                    {
+                        type: "button",
+                        text: {
+                            type: "plain_text",
+                            text: "Go Back",
+                            emoji: true
+                        },
+                        value: "click_me_123",
+                        action_id: "not_confirm_order"
+                    }
+                ]
+            }           
         ];
         return {blocks: blocks};
     } catch (err) {
@@ -272,14 +219,20 @@ Price: *${options.price}*`
     }
 }
 
-function showOrder(options){
+async function showOrder(options){
     try {
+        result = await Order.create({
+            person: options.username,
+            item: options.item_id,
+            vendor: options.vendor_id,
+            amount: options.price,
+        });
         let blocks = [
             {
                 type: "section",
                 text: {
                     type: "mrkdwn",
-                    text: `${options.dish} coming up! :smile:\nThanks for using lunchbot! I'll leave your order details here, just for reference.`
+                    text: `${options.dish} coming up! :smile:\nThanks for using AT Lunch App! I'll leave your order details here, just for reference.`
                 },
             },
         ];
@@ -294,6 +247,16 @@ function showOrder(options){
                             text: `Username: *${options.username}*\nDish: *${options.dish}*\nPrice: *${options.price}*`
                         }
                     },
+                    {
+                        type: 'context',
+                        elements: [
+                        {
+                            type: 'plain_text',
+                            text: `To be drop-shipped by ${options.cafe}`,
+                            emoji: true,
+                        }
+                        ]
+                    }
                 ]
             }
         ];

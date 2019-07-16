@@ -11,7 +11,7 @@ const options = {
 }
 
 function connectDB(database) {
-    mongoose.connect(process.env.DATABASE_URI + database, options)
+    mongoose.connect('mongodb://127.0.0.1:27017/' + database, options)
         .then(function () {
             console.log(database + ' connection successful');
         })

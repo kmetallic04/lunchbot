@@ -4,7 +4,6 @@ const { selectDb } = require('../utils');
 const db = selectDb();
 
 //Menu items Schema
-const categories = ["Drinks", "Meat Dishes", "Vegetable Dishes", "Specials", "Others"];
 
 const itemSchema = new mongoose.Schema({
     name: {
@@ -12,14 +11,6 @@ const itemSchema = new mongoose.Schema({
         required: [
             true,
             'Name is required'
-        ]
-    },
-    category: {
-        type: String,
-        enum: categories,
-        required: [
-            true,
-            'Category is required'
         ]
     },
     price: {
