@@ -1,7 +1,5 @@
-# Lunch_App
+# AT_Lunch_App
 Hungry at the office? No problem, we have a solution. Using Slack. Enjoy
-
-> Its a dangerous world out there, order lunch from the comfort of slack!
 
 **Get Started**
 
@@ -38,6 +36,4 @@ $ git checkout -b myAwesomeFeature develop
 ```
 
 Make a pull request to `develop`
-___
 
-**Well, lunch has been served. Happy Coding!**
