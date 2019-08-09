@@ -47,9 +47,11 @@ const getById = async (modelTag, _id, filter=null) => {
     return data;
 }
 
+
+
 const create = async (modelTag, details={}) => {
     const Model = pickModel(modelTag);
-
+    
     const data = await Model.create(details);
     return data;
 }
