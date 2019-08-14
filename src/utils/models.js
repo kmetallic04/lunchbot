@@ -28,15 +28,25 @@ const getAll = async (modelTag) => {
     return data;
 }
 
-const search = async (modelTag, lookup, pattern) => {
-    const query = {}
-    query[lookup] = {
+const search = async (modelTag, lookup, pattern, useRegex) => {
+    const query = useRegex ? {[lookup]: {
         $regex: pattern,
         $options: 'i'
-    }
+    }} : {[lookup]: pattern}
     const Model = pickModel(modelTag);
 
     const data = await Model.findOne(query, null, { lean: true });
+    return data;
+}
+
+const searchAll = async (modelTag, lookup, pattern, useRegex) => {
+    const query = useRegex ? {[lookup]: {
+        $regex: pattern,
+        $options: 'i'
+    }} : {[lookup]: pattern}
+    const Model = pickModel(modelTag);
+
+    const data = await Model.find(query, null, { lean: true });
     return data;
 }
 
@@ -69,6 +79,19 @@ const update = async (modelTag, _id, updates={}) => {
     return data;
 }
 
+const updateMany = async (modelTag, _id, updates={}) => {
+    const query = { _id };
+    const Model = pickModel(modelTag);
+
+    const options = {
+        new: true,
+        upsert: true
+    }
+
+    const data = await Model.updateMany(query, updates, options)
+    return data;
+}
+
 const delete_ = async (modelTag, _id) => {
     const query = { _id };
     const Model = pickModel(modelTag);
@@ -81,6 +104,7 @@ module.exports = {
     getAll,
     getById,
     search,
+    searchAll,
     create,
     update,
     delete_

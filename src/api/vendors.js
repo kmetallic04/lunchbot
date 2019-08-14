@@ -18,6 +18,8 @@ const {
     sendResults
 } = require('../utils');
 
+var sessions = {};
+
 const _validateParams = (params) => {
     let validationError;
 
@@ -85,7 +87,7 @@ router.get('/:name', (req, res) => {
         });
 });
 
-router.post('/create', verifyToken, (req, res) => {
+router.post('/create', (req, res) => {
     const details = req.body;
     const validationError = _validateParams(details);
 
@@ -94,58 +96,67 @@ router.post('/create', verifyToken, (req, res) => {
     }
 
     if (!(details.email || details.password || details.name || details.phone)) {
-        return res.status(400).json({message: "All fields must be filled"});
+        return sendValidationError(res, 
+            'Empty Fields', 
+            'Please fill out all the details'
+        );
     }
 
     search('vendor', 'email', details.email)
     .then((result) => {
-        if (result) {
-            return res.status(400).json({message: "Email is already in use"});
-        } else {
-            bcrypt.hash(details.password, bcrypt.genSaltSync(12))
-            .then((hash) => {
-                details.password = hash;
-                return create('vendor', details);
-            })
-            .then((result) => sendResults(res, {
-                    message: `User successfully created with email ${result.email}`
-                })
+        if (result)
+            sendValidationError(res, 
+                'Registered Email', 
+                'Email already in use...'
+            );
+        bcrypt.hash(details.password, bcrypt.genSaltSync(12))
+        .then((hash) => {
+            details.password = hash;
+            return create('vendor', details);
+        })
+        .then((result) => sendResults(res, {
+                message: result.email,
+            }, 
+            `User successfully created with email ${result.email}`
             )
-            .catch((err) => {
-                log.error(err);
-                sendServerError(res, err);
-            });
-        }
+        )
+        .catch((err) => {
+            log.error(err);
+            sendServerError(res, err);
+        });
     })    
 });
 
 router.post('/login', (req, res) => {
     const {email, password} = req.body;
+    console.log(req.body);
 
     search('vendor', 'email', email)
     .then((user) => {
         if (!user)
-            return res.status(400).json({message: "User has not been registered"});
+            return sendValidationError(res, 
+                'Unregistered User', 
+                'User has not been registered!'
+            );
         bcrypt.compare(password, user.password, (err, result) => {
             if (err) {
                 log.error(err);
-                return res.status(500).json({
-                    message: "Oops something went wrong. Please try again after sometime"
-                });
+                return sendServerError(res, err);
             }
 
             if (result) {
                 const token = Token(result);
-                return res.status(200).json({
-                    message: "Login successful",
-                    username: user.name,
+                return sendResults(res, {
+                    email: user.email,
+                    name: user.name,
                     token,
-                })
+                }, 'Login Successful');
             }
 
-            return res.status(400).json({
-                message: "Passwords do not match",
-            })
+            return sendValidationError(res, 
+                'Invalid Password', 
+                'Passwords do not match, please try again...'
+            );
         });
     })
     .catch(err => {

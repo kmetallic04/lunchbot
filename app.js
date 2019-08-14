@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const cors = require('cors');
 
 const slackRoutes = require('./src/api/slack');
 const vendorRoutes = require('./src/api/vendors');
@@ -11,6 +12,7 @@ const itemRoutes = require('./src/api/items');
 
 const app = express();
 
+app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

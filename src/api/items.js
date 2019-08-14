@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const validate = require('validate.js')
+const validate = require('validate.js');
 
 const {
     getAll,
+    search,
+    searchAll,
     getById,
     create,
     update,
@@ -108,6 +110,18 @@ router.post('/create', (req, res) => {
         .then(result => {
             sendResults(res, result);
         })
+        .catch(err => {
+            log.error(err);
+            sendServerError(res);
+        });
+});
+
+router.post('/myItems', (req, res) => {
+    const details = req.body;
+    console.log(req.body);
+    search('vendor', 'email', details.email)
+        .then(result => searchAll('item', 'vendor', String(result._id)))
+        .then(result => sendResults(res, result))
         .catch(err => {
             log.error(err);
             sendServerError(res);
