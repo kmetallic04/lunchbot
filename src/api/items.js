@@ -9,6 +9,7 @@ const {
     getById,
     create,
     update,
+    updateMany,
     delete_
 } = require('../utils/models');
 
@@ -128,7 +129,7 @@ router.post('/myItems', (req, res) => {
         });
 });
 
-router.put('/edit/:id', (req, res) => {
+router.put('/update/:id', (req, res) => {
     const updates = req.body;
     const id = req.params.id;
     const validationError = _validateParams(updates);
@@ -145,6 +146,18 @@ router.put('/edit/:id', (req, res) => {
             log.error(err);
             sendServerError(res, err);
         });
+});
+
+router.put('/update', (req, res) => {
+    const { active, inactive } = req.body;
+
+    updateMany('item', active, 'active', true)
+    .then(() => updateMany('item', inactive, 'active', true))
+    .then(result => sendResults(res, result))
+    .catch(err => {
+        log.error(err);
+        sendServerError(res, err);
+    });
 });
 
 router.delete('/delete/:id', (req, res) => {

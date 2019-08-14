@@ -79,13 +79,13 @@ const update = async (modelTag, _id, updates={}) => {
     return data;
 }
 
-const updateMany = async (modelTag, _id, updates={}) => {
-    const query = { _id };
+const updateMany = async (modelTag, list, field, value) => {
+    const query = { _id: { $in: list } };
+    const updates = { $set: { [field]: value } };
     const Model = pickModel(modelTag);
 
     const options = {
         new: true,
-        upsert: true
     }
 
     const data = await Model.updateMany(query, updates, options)
@@ -107,5 +107,6 @@ module.exports = {
     searchAll,
     create,
     update,
+    updateMany,
     delete_
 }
