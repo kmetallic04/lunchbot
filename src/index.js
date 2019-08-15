@@ -36,7 +36,12 @@ function getMenu(options) {
 }
 
 async function getVendors() {
-    const vendors = await Vendor.find({});
+    const activeItems = await Item.find({'active': true});
+    const vendorIds = [...new Set(
+        activeItems.map(item => item.vendor)
+    )];
+    console.log(vendorIds);
+    const vendors = await Vendor.find({ '_id': { $in: vendorIds } });
 
     function formatVendors(vendors) {
         let options = new Array();
@@ -57,14 +62,15 @@ async function getVendors() {
 }
 
 async function showMenu(cafe) {
-    const query = (cafe === 'All Cafes'? {}: {'vendor.name': cafe});
+    const cafeQuery = (cafe === 'All Cafes'? {}: {'vendor.name': cafe});
+    const activeQuery = { 'active': true };
     const menu = await Item.aggregate([{$lookup:
         {
           from: Vendor.collection.name,
           localField: 'vendor',
           foreignField: '_id',
           as: 'vendor'
-        }},{$match: query}]);
+        }},{ $match: { ...cafeQuery, ...activeQuery }}]);
     
     function markDownMenu(menu) {
         let blocks = [
@@ -72,7 +78,7 @@ async function showMenu(cafe) {
                 type: 'section',
                 text: {
                   type: 'mrkdwn',
-                  text: `\nOffers from ${cafe}`,
+                  text: `\n\n*Offers from ${cafe}*`,
                 },
                 accessory: {
                     type: "button",
@@ -96,7 +102,7 @@ async function showMenu(cafe) {
                     type: 'section',
                     text: {
                         type: 'mrkdwn',
-                        text: `*${item.name}*\n_Price_: *${item.price}*`,
+                        text: `*_${item.name}_*\nPrice: ${item.price}`,
                     },
                     accessory: {
                         type: "button",
@@ -232,7 +238,7 @@ async function showOrder(options){
                 type: "section",
                 text: {
                     type: "mrkdwn",
-                    text: `${options.dish} coming up! :smile:\nThanks for using AT Lunch App! I'll leave your order details here, just for reference.`
+                    text: `${options.dish} coming up! :smile:\nThanks for using AT Lunch App! I'll leave your order details here, just for your reference.`
                 },
             },
         ];

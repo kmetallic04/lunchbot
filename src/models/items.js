@@ -28,6 +28,9 @@ const itemSchema = new mongoose.Schema({
             true,
             'Vendor is required'
         ]
+    },
+    active: {
+        type: Boolean,
     }
 });
 

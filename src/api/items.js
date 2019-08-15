@@ -152,7 +152,7 @@ router.put('/update', (req, res) => {
     const { active, inactive } = req.body;
 
     updateMany('item', active, 'active', true)
-    .then(() => updateMany('item', inactive, 'active', true))
+    .then(() => updateMany('item', inactive, 'active', false))
     .then(result => sendResults(res, result))
     .catch(err => {
         log.error(err);
