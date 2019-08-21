@@ -128,7 +128,7 @@ router.post('/create', (req, res) => {
 });
 
 router.post('/login', (req, res) => {
-    const {email, password} = req.body;
+    const { email, password } = req.body;
     console.log(req.body);
 
     search('vendor', 'email', email)
@@ -149,6 +149,7 @@ router.post('/login', (req, res) => {
                 return sendResults(res, {
                     email: user.email,
                     name: user.name,
+                    vendor: user._id,
                     token,
                 }, 'Login Successful');
             }

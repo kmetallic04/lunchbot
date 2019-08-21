@@ -67,7 +67,10 @@ const create = async (modelTag, details={}) => {
 }
 
 const update = async (modelTag, _id, updates={}) => {
-    const query = { _id };
+    const query = { '_id' : _id };
+    const { name, price } = updates;
+    const newUpdates = { $set:{ name, price } };
+    console.log(newUpdates);
     const Model = pickModel(modelTag);
 
     const options = {
@@ -75,7 +78,7 @@ const update = async (modelTag, _id, updates={}) => {
         upsert: true
     }
 
-    const data = await Model.updateOne(query, updates, options)
+    const data = await Model.updateOne(query, newUpdates, options);
     return data;
 }
 
@@ -101,6 +104,18 @@ const delete_ = async (modelTag, _id) => {
     return data;
 }
 
+const customGetOrders = async (vendorId) => {
+    const orders = await Order.aggregate([{$lookup:
+    {
+        from: Item.collection.name,
+        localField: 'item',
+        foreignField: '_id',
+        as: 'item'
+    }},{ $match: {  }}]);
+
+    return orders.filter(order => String(order.vendor) === vendorId);
+}
+
 module.exports = {
     getAll,
     getById,
@@ -109,5 +124,6 @@ module.exports = {
     create,
     update,
     updateMany,
-    delete_
+    delete_,
+    customGetOrders
 }

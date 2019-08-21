@@ -100,14 +100,9 @@ router.get('/item/:id', (req, res) => {
 });
 
 router.post('/create', (req, res) => {
-    const details = req.body;
-    const validationError = _validateParams(details);
+    const { name, price, vendor } = req.body;
 
-    if (validationError) {
-        return sendValidationError(res, validationError);
-    }
-
-    create('item', details)
+    create('item', { name, price, vendor })
         .then(result => {
             sendResults(res, result);
         })
@@ -129,16 +124,10 @@ router.post('/myItems', (req, res) => {
         });
 });
 
-router.put('/update/:id', (req, res) => {
+router.put('/update/edit', (req, res) => {
     const updates = req.body;
-    const id = req.params.id;
-    const validationError = _validateParams(updates);
 
-    if (validationError) {
-        return sendValidationError(res, validationError);
-    }
-
-    update('item', id, updates)
+    update('item', updates._id, updates)
         .then(result => {
             sendResults(res, result);
         })
@@ -160,9 +149,9 @@ router.put('/update', (req, res) => {
     });
 });
 
-router.delete('/delete/:id', (req, res) => {
-    const id = req.params.id;
-    delete_('item', id)
+router.delete('/delete', (req, res) => {
+    const { _id } = req.body;
+    delete_('item', _id)
         .then(result => {
             sendResults(res, result);
         })

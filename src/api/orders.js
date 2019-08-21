@@ -7,7 +7,8 @@ const {
     getById,
     create,
     update,
-    delete_
+    delete_,
+    customGetOrders,
 } = require('../utils/models');
 
 const {
@@ -99,6 +100,19 @@ router.get('/', (req, res) => {
 router.get('/order/:id', (req, res) => {
     const id = req.params.id;
     getById('order', id)
+        .then(result => {
+            sendResults(res, result);
+        })
+        .catch(err => {
+            log.error(err);
+            sendServerError(res, err);
+        });
+});
+
+router.post('/myOrders', (req, res) => {
+    const { vendor } = req.body;
+
+    customGetOrders(vendor)
         .then(result => {
             sendResults(res, result);
         })
