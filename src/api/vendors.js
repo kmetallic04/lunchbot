@@ -75,7 +75,7 @@ router.get('/', verifyToken, (req, res) => {
         });
 });
 
-router.get('/:name', (req, res) => {
+router.get('/:name', verifyToken, (req, res) => {
     const name = req.params.name;
     search('vendor', 'name', name)
         .then(result => {
@@ -87,7 +87,7 @@ router.get('/:name', (req, res) => {
         });
 });
 
-router.post('/create', (req, res) => {
+router.post('/create', verifyToken, (req, res) => {
     const details = req.body;
     const validationError = _validateParams(details);
 
@@ -147,9 +147,10 @@ router.post('/login', (req, res) => {
             if (result) {
                 const token = Token(result);
                 return sendResults(res, {
+                    vendor: user._id,
                     email: user.email,
                     name: user.name,
-                    vendor: user._id,
+                    phone: user.phone,
                     token,
                 }, 'Login Successful');
             }
@@ -166,7 +167,7 @@ router.post('/login', (req, res) => {
     })
 });
 
-router.put('/edit/:id', (req, res) => {
+router.put('/edit/:id', verifyToken, (req, res) => {
     const updates = req.body;
     const id = req.params.id;
     const validationError = _validateParams(updates);
@@ -185,7 +186,7 @@ router.put('/edit/:id', (req, res) => {
         });
 });
 
-router.delete('/delete/:id', (req, res) => {
+router.delete('/delete/:id', verifyToken, (req, res) => {
     const id = req.params.id;
     delete_('vendor', id)
         .then(result => {

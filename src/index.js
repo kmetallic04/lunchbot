@@ -40,7 +40,6 @@ async function getVendors() {
     const vendorIds = [...new Set(
         activeItems.map(item => item.vendor)
     )];
-    console.log(vendorIds);
     const vendors = await Vendor.find({ '_id': { $in: vendorIds } });
 
     function formatVendors(vendors) {
@@ -62,7 +61,7 @@ async function getVendors() {
 }
 
 async function showMenu(cafe) {
-    const cafeQuery = (cafe === 'All Cafes'? {}: {'vendor.name': cafe});
+    const cafeQuery = { 'vendor.name': cafe };
     const activeQuery = { 'active': true };
     const menu = await Item.aggregate([{$lookup:
         {
@@ -231,6 +230,7 @@ async function showOrder(options){
             person: options.username,
             item: options.item_id,
             vendor: options.vendor_id,
+            name: options.dish,
             amount: options.price,
         });
         let blocks = [

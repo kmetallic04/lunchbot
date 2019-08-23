@@ -75,7 +75,6 @@ const update = async (modelTag, _id, updates={}) => {
 
     const options = {
         new: true,
-        upsert: true
     }
 
     const data = await Model.updateOne(query, newUpdates, options);
@@ -89,7 +88,6 @@ const updateMany = async (modelTag, list, field, value) => {
 
     const options = {
         new: true,
-        upsert: true,
     }
 
     const data = await Model.updateMany(query, updates, options)
@@ -113,7 +111,13 @@ const customGetOrders = async (vendorId) => {
         as: 'item'
     }},{ $match: {  }}]);
 
-    return orders.filter(order => String(order.vendor) === vendorId);
+    const date = new Date();
+
+    return orders.filter(order => (
+        String(order.vendor) === vendorId
+        &&
+        date.toDateString() === order.date.toDateString()
+    ));
 }
 
 module.exports = {

@@ -67,9 +67,11 @@ router.post('/actions', async (req, res) => {
                 break;
             case 'confirm_order':
                 response = await showOrder(slackSession[userId]);
+                slackSession[userId].response_url = slackReqObj.response_url;
                 break;
             case 'not_confirm_order':
                 response = await showMenu(slackSession[userId].cafe_init);
+                slackSession[userId].response_url = slackReqObj.response_url;
                 break;
         }
         return postResponse(slackSession[userId].response_url, response);

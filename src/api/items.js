@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const validate = require('validate.js');
+const { verifyToken } = require('../utils/token');
 
 const {
     getAll,
@@ -76,7 +77,7 @@ const _validateParams = (params) => {
     return validationError;
 }
 
-router.get('/', (req, res) => {
+router.get('/', verifyToken, (req, res) => {
     getAll('item')
         .then(result => {
             sendResults(res, result);
@@ -87,7 +88,7 @@ router.get('/', (req, res) => {
         });
 });
 
-router.get('/item/:id', (req, res) => {
+router.get('/item/:id', verifyToken, (req, res) => {
     const id = req.params.id;
     getById('item', id)
         .then(result => {
@@ -99,7 +100,7 @@ router.get('/item/:id', (req, res) => {
         });
 });
 
-router.post('/create', (req, res) => {
+router.post('/create', verifyToken, (req, res) => {
     const { name, price, vendor } = req.body;
 
     create('item', { name, price, vendor })
@@ -112,7 +113,7 @@ router.post('/create', (req, res) => {
         });
 });
 
-router.post('/myItems', (req, res) => {
+router.post('/myItems', verifyToken, (req, res) => {
     const details = req.body;
     console.log(req.body);
     search('vendor', 'email', details.email)
@@ -124,7 +125,7 @@ router.post('/myItems', (req, res) => {
         });
 });
 
-router.put('/update/edit', (req, res) => {
+router.put('/update/edit', verifyToken, (req, res) => {
     const updates = req.body;
 
     update('item', updates._id, updates)
@@ -137,7 +138,7 @@ router.put('/update/edit', (req, res) => {
         });
 });
 
-router.put('/update', (req, res) => {
+router.put('/update', verifyToken, (req, res) => {
     const { active, inactive } = req.body;
 
     updateMany('item', active, 'active', true)
@@ -149,7 +150,7 @@ router.put('/update', (req, res) => {
     });
 });
 
-router.delete('/delete', (req, res) => {
+router.delete('/delete', verifyToken, (req, res) => {
     const { _id } = req.body;
     delete_('item', _id)
         .then(result => {

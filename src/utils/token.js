@@ -12,8 +12,10 @@ const verifyToken = (req, res, next) => {
     if (token) {
         jwt.verify(token, process.env.KEY, (err, decoded) => {
             if (err) {
-                return res.status(400).json({
-                    message: "Oops, there was an error verifying your credentials",
+                return res.status(401).json({
+                    status: 401,
+                    data: {},
+                    message: "Oops, there was an error verifying your credentials 1",
                 });
             } else {
                 req.decoded = decoded;
@@ -21,7 +23,9 @@ const verifyToken = (req, res, next) => {
             }
         });
     } else {
-        return res.status(400).json({
+        return res.status(401).json({
+            status: 401,
+            data: {},
             message: "Oops, there was an error verifying your credentials",
         });
     }

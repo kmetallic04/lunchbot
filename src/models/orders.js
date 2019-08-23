@@ -28,6 +28,13 @@ const orderSchema = new mongoose.Schema({
             'Vendor is required'
         ]
     },
+    name: {
+        type: String,
+        required: [
+            true,
+            'Name is required'
+        ]
+    },
     amount: {
         type: Number,
         min: 0,
@@ -35,6 +42,10 @@ const orderSchema = new mongoose.Schema({
             true,
             'Amount is required'
         ]
+    },
+    date: {
+        type: Date,
+        default: new Date,
     },
     paid: {
         type: Boolean,
