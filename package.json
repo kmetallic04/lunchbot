@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www",
+    "start": "KEY=privatekey NODE_ENV=development node ./bin/www",
     "dev": "cross-env KEY=privatekey NODE_ENV=development nodemon ./bin/www",
     "pretest": "",
     "test": "cross-env NODE_ENV=test nyc _mocha --recursive --exit ./test/",

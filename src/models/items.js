@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
-const { selectDb } = require('../utils');
+const { selectedDb } = require('../utils');
 
-const db = selectDb();
+const db = selectedDb;
 
 //Menu items Schema
 

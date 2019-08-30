@@ -87,7 +87,7 @@ router.get('/:name', verifyToken, (req, res) => {
         });
 });
 
-router.post('/create', verifyToken, (req, res) => {
+router.post('/create', (req, res) => {
     const details = req.body;
     const validationError = _validateParams(details);
 
@@ -112,7 +112,8 @@ router.post('/create', verifyToken, (req, res) => {
         bcrypt.hash(details.password, bcrypt.genSaltSync(12))
         .then((hash) => {
             details.password = hash;
-            return create('vendor', details);
+            // return create('vendor', details);
+            return Promise.resolve(details);
         })
         .then((result) => sendResults(res, {
                 message: result.email,

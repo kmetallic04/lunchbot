@@ -24,6 +24,8 @@ const selectDb = () => {
     return db;
 }
 
+const selectedDb = selectDb();
+
 const sendServerError = (res, error, message = null) => {
     let data;
     if (process.env.NODE_ENV !== 'production') {
@@ -54,7 +56,7 @@ const sendResults = (res, results, message = null) => {
 
 module.exports = {
     log,
-    selectDb,
+    selectedDb,
     sendServerError,
     sendValidationError,
     sendResults
