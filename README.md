@@ -1,4 +1,4 @@
-# AT_Lunch_App
+# AT Catering
 Hungry at the office? No problem, we have a solution. Using Slack. Enjoy
 
 **Get Started**
